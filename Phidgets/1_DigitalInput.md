@@ -185,6 +185,12 @@ async function connectToPhidgetServer(address, port) {
   ...
   await connection.connect();
 
+  await openDigitalInput();
+
+  setConnectedUI(true);
+}
+
+async function openDigitalInput() {
   digitalInput = new phidget22.DigitalInput();
 
   digitalInput.isHubPortDevice = true;
@@ -195,11 +201,7 @@ async function connectToPhidgetServer(address, port) {
 `DigitalInput` represents one specific type of Phidget channel — a simple on/off sensor, which is exactly what a touch sensor is. Setting `isHubPortDevice = true` and `hubPort = 0` tells the library: "don't search for just any digital input on the network — target the device plugged directly into port 0 of the hub." This matters once more than one Phidget is on the network; without pinning the port, the library would grab whichever digital input it found first, which may not be the button you're pressing.
 
 ```javascript
-async function connectToPhidgetServer(address, port) {
-  ...
-
-  digitalInput = new phidget22.DigitalInput();
-
+async function openDigitalInput() {
   ...
 
   digitalInput.onAttach = () => {
@@ -231,8 +233,6 @@ async function connectToPhidgetServer(address, port) {
   };
 
   await digitalInput.open(5000);
-
-  setConnectedUI(true);
 }
 ```
 

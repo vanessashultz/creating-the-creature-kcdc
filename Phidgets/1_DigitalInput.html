@@ -190,6 +190,12 @@
 
       await connection.connect();
 
+      await openDigitalInput();
+
+      setConnectedUI(true);
+    }
+
+    async function openDigitalInput() {
       digitalInput = new phidget22.DigitalInput();
 
       digitalInput.isHubPortDevice = true;
@@ -225,8 +231,6 @@
       }
 
       await digitalInput.open(5000);
-
-      setConnectedUI(true);
     }
 
     async function disconnectFromPhidgetServer() {
