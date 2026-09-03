@@ -6,11 +6,10 @@
   <script src="https://unpkg.com/phidget22/browser/phidget22.js"></script>
   <style>
     body {
-      font-family: system-ui, sans-serif;
       max-width: 720px;
       margin: 40px auto;
       padding: 0 16px;
-      background: #f5f5f7;
+      background: #f5f5f5;
       color: #1a1a1a;
     }
 
@@ -67,13 +66,12 @@
       color: white;
       background: #8a8f98;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.1s ease, transform 0.1s ease;
+      transition: background-color 0.1s ease;
       user-select: none;
     }
 
     #buttonVisual.pressed {
       background: #d3322b;
-      transform: scale(0.94);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) inset;
     }
 
@@ -105,9 +103,9 @@
   </style>
 </head>
 <body>
-
   <h1>Phidget Button Monitor</h1>
 
+  <!-- The connection form -->
   <section>
     <form id="connectionForm">
       <label>
@@ -126,18 +124,19 @@
     </div>
   </section>
 
+  <!-- The button visual -->
   <section>
     <h2>Button State</h2>
     <div id="buttonVisual" class="neutral">NEUTRAL</div>
   </section>
 
+  <!-- The raw state panel -->
   <section>
     <h2>Raw Phidget State</h2>
     <div id="rawStatePanel">Waiting for connection...</div>
   </section>
 
   <script>
-    // Elements
     const connectionForm = document.getElementById("connectionForm");
     const serverAddressInput = document.getElementById("serverAddress");
     const serverPortInput = document.getElementById("serverPort");
@@ -147,16 +146,19 @@
     const buttonVisual = document.getElementById("buttonVisual");
     const rawStatePanel = document.getElementById("rawStatePanel");
 
-    // Phidget objects — created fresh on each connection attempt
-    let digitalInput = null;
+    let connection;
+    let digitalInput;
 
-    // Keeps the raw state panel in sync with whatever we last observed
+    /// ---------------------
+    /// Helper functions
+    /// ---------------------
+
     function updateRawStatePanel(stateObject) {
       rawStatePanel.textContent = JSON.stringify(stateObject, null, 2);
     }
 
     function setConnectedUI(isConnected) {
-      statusText.textContent = isConnected ? "Connected" : "Disconnected";
+      statusText.textContent = isConnected ? 'Connected' : "Disconnected";
       statusText.className = isConnected ? "connected" : "disconnected";
       connectButton.disabled = isConnected;
       disconnectButton.disabled = !isConnected;
@@ -170,27 +172,21 @@
       buttonVisual.textContent = isPressed ? "PRESSED" : "NEUTRAL";
     }
 
+    /// ---------------------
+    /// Phidget Controls
+    /// ---------------------
+
     async function connectToPhidgetServer(address, port) {
-      // phidget22 attaches itself to window as `phidget22`
-      const connection = new phidget22.NetworkConnection({
+      connection = new phidget22.NetworkConnection({
         hostname: address,
         port: port,
-        onError: (code, message) => updateRawStatePanel({ connectionError: { code, message }}),
-        onConnect: () => updateRawStatePanel({ status: "Connected"}),
+        onError: (code, message) => updateRawStatePanel({ status: "Error", connectionError: { code, message }}),
+        onConnect: () => updateRawStatePanel({ status: "Connected" }),
         onDisconnect: () => {
           setConnectedUI(false);
-          updateRawStatePanel({ status: "Disconnected from server" })
+          updateRawStatePanel({ status: "Disconnected from server" });
         }
       });
-
-      connection.onError = (code, message) => {
-        updateRawStatePanel({ connectionError: { code, message } });
-      };
-
-      connection.onDisconnect = () => {
-        setConnectedUI(false);
-        updateRawStatePanel({ status: "Disconnected from server" });
-      };
 
       await connection.connect();
 
@@ -199,26 +195,24 @@
       digitalInput.isHubPortDevice = true;
       digitalInput.hubPort = 0;
 
-      // Any channel on any hub connected to the server — adjust if you need
-      // to target a specific device/channel.
       digitalInput.onAttach = () => {
         updateRawStatePanel({
           status: "Attached",
           deviceName: digitalInput.deviceName,
           serialNumber: digitalInput.deviceSerialNumber,
           channel: digitalInput.channel,
-          state: digitalInput.state
+          state: digitalInput.state,
+          timestamp: new Date().toISOString()
         });
         setButtonVisual(digitalInput.state === true);
-      };
+      }
 
       digitalInput.onDetach = () => {
         updateRawStatePanel({ status: "Device detached" });
         setButtonVisual(false);
-      };
+      }
 
       digitalInput.onStateChange = (state) => {
-        setButtonVisual(!state);
         updateRawStatePanel({
           status: "State change",
           deviceName: digitalInput.deviceName,
@@ -227,7 +221,8 @@
           state: state,
           timestamp: new Date().toISOString()
         });
-      };
+        setButtonVisual(!state);
+      }
 
       await digitalInput.open(5000);
 
@@ -238,15 +233,22 @@
       if (digitalInput) {
         try {
           await digitalInput.close();
-        } catch (error) {
+        }
+        catch (error) {
+          console.warn(error);
           // Channel may already be closed — nothing to do here.
         }
         digitalInput = null;
       }
+
       setButtonVisual(false);
       setConnectedUI(false);
       updateRawStatePanel({ status: "Disconnected" });
     }
+
+    /// ---------------------
+    /// Event Listeners
+    /// ---------------------
 
     connectionForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -256,7 +258,10 @@
       try {
         updateRawStatePanel({ status: "Connecting..." });
         await connectToPhidgetServer(address, port);
-      } catch (error) {
+      }
+      catch (error) {
+        console.error(error);
+
         updateRawStatePanel({ connectionError: String(error) });
         setConnectedUI(false);
       }
@@ -264,6 +269,5 @@
 
     disconnectButton.addEventListener("click", disconnectFromPhidgetServer);
   </script>
-
 </body>
 </html>
