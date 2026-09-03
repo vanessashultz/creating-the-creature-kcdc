@@ -1,0 +1,162 @@
+.phidget-page {
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+  background: #f5f5f7;
+  color: #1a1a1a;
+}
+
+.phidget-page h1 {
+  font-size: 1.4rem;
+}
+
+/* Connection form */
+.connection-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.connection-form input {
+  padding: 6px 8px;
+  font-size: 1rem;
+}
+
+.connection-form button {
+  padding: 6px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.status-line {
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.status-line .connected {
+  color: #1a7f37;
+  font-weight: bold;
+}
+
+.status-line .disconnected {
+  color: #b42318;
+  font-weight: bold;
+}
+
+/* Button visual */
+#buttonVisual {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  margin: 32px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  background: #8a8f98;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.1s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+#buttonVisual.pressed {
+  background: #d64545;
+  transform: scale(0.94);
+}
+
+#buttonVisual.neutral {
+  background: #8a8f98;
+}
+
+/* Voltage ratio visual */
+#ratioVisual {
+  margin: 32px auto;
+  max-width: 480px;
+}
+
+#ratioValue {
+  font-size: 2.4rem;
+  font-weight: bold;
+  text-align: center;
+  font-family: "Courier New", monospace;
+}
+
+#ratioBarTrack {
+  width: 100%;
+  height: 24px;
+  background: #d9dce1;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+#ratioBarFill {
+  height: 100%;
+  width: 0%;
+  background: #3a9d4f;
+  transition: width 0.1s ease;
+}
+
+/* Output control button */
+#outputButton {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  margin: 32px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  background: #8a8f98;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.1s ease, transform 0.1s ease;
+  user-select: none;
+  border: none;
+  cursor: pointer;
+}
+
+#outputButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#outputButton.on {
+  background: #3a9d4f;
+}
+
+#outputButton.off {
+  background: #8a8f98;
+}
+
+#outputButton:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+/* Raw state panel */
+#rawStatePanel {
+  background: #10131a;
+  color: #b6ffb6;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.phidget-page section {
+  margin-bottom: 28px;
+}
+
+.phidget-page label {
+  font-size: 0.9rem;
+}

@@ -1,0 +1,31 @@
+<h1>Phidget Button Monitor</h1>
+
+<section>
+  <form class="connection-form" (ngSubmit)="connect()">
+    <label>
+      Server address
+      <input type="text" name="serverAddress" [ngModel]="serverAddress()" (ngModelChange)="serverAddress.set($event)" [disabled]="connected()" />
+    </label>
+    <label>
+      Port
+      <input type="number" name="serverPort" style="width: 80px;" [ngModel]="serverPort()" (ngModelChange)="serverPort.set($event)" [disabled]="connected()" />
+    </label>
+    <button type="submit" [disabled]="connected()">Connect</button>
+    <button type="button" [disabled]="!connected()" (click)="disconnect()">Disconnect</button>
+  </form>
+  <div class="status-line">
+    Status: <span [class.connected]="connected()" [class.disconnected]="!connected()">{{ statusText() }}</span>
+  </div>
+</section>
+
+<section>
+  <h2>Button State</h2>
+  <div class="button-visual" [class.pressed]="buttonPressed()" [class.neutral]="!buttonPressed()">
+    {{ buttonPressed() ? 'PRESSED' : 'NEUTRAL' }}
+  </div>
+</section>
+
+<section>
+  <h2>Raw Phidget State</h2>
+  <div class="raw-state-panel">{{ rawState() }}</div>
+</section>

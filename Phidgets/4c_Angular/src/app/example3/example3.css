@@ -1,0 +1,36 @@
+/* Output control button */
+.output-button {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  margin: 32px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  background: #8a8f98;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.1s ease, transform 0.1s ease;
+  user-select: none;
+  border: none;
+  cursor: pointer;
+}
+
+.output-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.output-button.on {
+  background: #3a9d4f;
+}
+
+.output-button.off {
+  background: #8a8f98;
+}
+
+.output-button:active:not(:disabled) {
+  transform: scale(0.94);
+}

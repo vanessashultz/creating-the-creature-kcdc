@@ -1,0 +1,18 @@
+.example-nav {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+}
+
+.example-nav a {
+  color: #3a5edb;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.example-nav a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}

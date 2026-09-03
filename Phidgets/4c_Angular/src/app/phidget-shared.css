@@ -1,0 +1,71 @@
+/* Shared layout used by every Phidget example component */
+
+:host {
+  display: block;
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+  color: #1a1a1a;
+}
+
+h1 {
+  font-size: 1.4rem;
+}
+
+/* Connection form */
+.connection-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.connection-form input {
+  padding: 6px 8px;
+  font-size: 1rem;
+}
+
+.connection-form button {
+  padding: 6px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.status-line {
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.status-line .connected {
+  color: #1a7f37;
+  font-weight: bold;
+}
+
+.status-line .disconnected {
+  color: #b42318;
+  font-weight: bold;
+}
+
+/* Raw state panel */
+.raw-state-panel {
+  background: #10131a;
+  color: #b6ffb6;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+section {
+  margin-bottom: 28px;
+}
+
+label {
+  font-size: 0.9rem;
+}

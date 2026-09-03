@@ -1,0 +1,38 @@
+<h1>Phidget Digital Output Control</h1>
+
+<section>
+  <form class="connection-form" (ngSubmit)="connect()">
+    <label>
+      Server address
+      <input type="text" name="serverAddress" [ngModel]="serverAddress()" (ngModelChange)="serverAddress.set($event)" [disabled]="connected()" />
+    </label>
+    <label>
+      Port
+      <input type="number" name="serverPort" style="width: 80px;" [ngModel]="serverPort()" (ngModelChange)="serverPort.set($event)" [disabled]="connected()" />
+    </label>
+    <button type="submit" [disabled]="connected()">Connect</button>
+    <button type="button" [disabled]="!connected()" (click)="disconnect()">Disconnect</button>
+  </form>
+  <div class="status-line">
+    Status: <span [class.connected]="connected()" [class.disconnected]="!connected()">{{ statusText() }}</span>
+  </div>
+</section>
+
+<section>
+  <h2>Digital Output</h2>
+  <button
+    type="button"
+    class="output-button"
+    [class.on]="outputOn()"
+    [class.off]="!outputOn()"
+    [disabled]="!connected()"
+    (click)="toggleOutput()"
+  >
+    {{ outputOn() ? 'ON' : 'OFF' }}
+  </button>
+</section>
+
+<section>
+  <h2>Raw Phidget State</h2>
+  <div class="raw-state-panel">{{ rawState() }}</div>
+</section>

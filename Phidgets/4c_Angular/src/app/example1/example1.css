@@ -1,0 +1,27 @@
+/* Button visual */
+.button-visual {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  margin: 32px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  background: #8a8f98;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.1s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.button-visual.pressed {
+  background: #d3322b;
+  transform: scale(0.94);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) inset;
+}
+
+.button-visual.neutral {
+  background: #3a9d4f;
+}

@@ -1,0 +1,28 @@
+/* Voltage ratio visual */
+.ratio-visual {
+  margin: 32px auto;
+  max-width: 480px;
+}
+
+.ratio-value {
+  font-size: 2.4rem;
+  font-weight: bold;
+  text-align: center;
+  font-family: "Courier New", monospace;
+}
+
+.ratio-bar-track {
+  width: 100%;
+  height: 24px;
+  background: #d9dce1;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.ratio-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #3a9d4f;
+  transition: width 0.1s ease;
+}

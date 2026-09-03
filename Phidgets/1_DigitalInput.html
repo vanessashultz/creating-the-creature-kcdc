@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phidget Button Monitor</title>
+  <script src="https://unpkg.com/phidget22/browser/phidget22.js"></script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f5f5f7;
+      color: #1a1a1a;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    /* Connection form */
+    #connectionForm {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    #connectionForm input {
+      padding: 6px 8px;
+      font-size: 1rem;
+    }
+
+    #connectionForm button {
+      padding: 6px 14px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #statusLine {
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    #statusLine .connected {
+      color: #1a7f37;
+      font-weight: bold;
+    }
+
+    #statusLine .disconnected {
+      color: #b42318;
+      font-weight: bold;
+    }
+
+    /* Button visual */
+    #buttonVisual {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      margin: 32px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      background: #8a8f98;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.1s ease, transform 0.1s ease;
+      user-select: none;
+    }
+
+    #buttonVisual.pressed {
+      background: #d3322b;
+      transform: scale(0.94);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) inset;
+    }
+
+    #buttonVisual.neutral {
+      background: #3a9d4f;
+    }
+
+    /* Raw state panel */
+    #rawStatePanel {
+      background: #10131a;
+      color: #b6ffb6;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: "Courier New", monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    section {
+      margin-bottom: 28px;
+    }
+
+    label {
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Phidget Button Monitor</h1>
+
+  <section>
+    <form id="connectionForm">
+      <label>
+        Server address
+        <input id="serverAddress" type="text" value="localhost" />
+      </label>
+      <label>
+        Port
+        <input id="serverPort" type="number" value="8989" style="width: 80px;" />
+      </label>
+      <button id="connectButton" type="submit">Connect</button>
+      <button id="disconnectButton" type="button" disabled>Disconnect</button>
+    </form>
+    <div id="statusLine">
+      Status: <span id="statusText" class="disconnected">Disconnected</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Button State</h2>
+    <div id="buttonVisual" class="neutral">NEUTRAL</div>
+  </section>
+
+  <section>
+    <h2>Raw Phidget State</h2>
+    <div id="rawStatePanel">Waiting for connection...</div>
+  </section>
+
+  <script>
+    // Elements
+    const connectionForm = document.getElementById("connectionForm");
+    const serverAddressInput = document.getElementById("serverAddress");
+    const serverPortInput = document.getElementById("serverPort");
+    const connectButton = document.getElementById("connectButton");
+    const disconnectButton = document.getElementById("disconnectButton");
+    const statusText = document.getElementById("statusText");
+    const buttonVisual = document.getElementById("buttonVisual");
+    const rawStatePanel = document.getElementById("rawStatePanel");
+
+    // Phidget objects — created fresh on each connection attempt
+    let digitalInput = null;
+
+    // Keeps the raw state panel in sync with whatever we last observed
+    function updateRawStatePanel(stateObject) {
+      rawStatePanel.textContent = JSON.stringify(stateObject, null, 2);
+    }
+
+    function setConnectedUI(isConnected) {
+      statusText.textContent = isConnected ? "Connected" : "Disconnected";
+      statusText.className = isConnected ? "connected" : "disconnected";
+      connectButton.disabled = isConnected;
+      disconnectButton.disabled = !isConnected;
+      serverAddressInput.disabled = isConnected;
+      serverPortInput.disabled = isConnected;
+    }
+
+    function setButtonVisual(isPressed) {
+      buttonVisual.classList.toggle("pressed", isPressed);
+      buttonVisual.classList.toggle("neutral", !isPressed);
+      buttonVisual.textContent = isPressed ? "PRESSED" : "NEUTRAL";
+    }
+
+    async function connectToPhidgetServer(address, port) {
+      // phidget22 attaches itself to window as `phidget22`
+      const connection = new phidget22.NetworkConnection({
+        hostname: address,
+        port: port,
+        onError: (code, message) => updateRawStatePanel({ connectionError: { code, message }}),
+        onConnect: () => updateRawStatePanel({ status: "Connected"}),
+        onDisconnect: () => {
+          setConnectedUI(false);
+          updateRawStatePanel({ status: "Disconnected from server" })
+        }
+      });
+
+      connection.onError = (code, message) => {
+        updateRawStatePanel({ connectionError: { code, message } });
+      };
+
+      connection.onDisconnect = () => {
+        setConnectedUI(false);
+        updateRawStatePanel({ status: "Disconnected from server" });
+      };
+
+      await connection.connect();
+
+      digitalInput = new phidget22.DigitalInput();
+
+      digitalInput.isHubPortDevice = true;
+      digitalInput.hubPort = 0;
+
+      // Any channel on any hub connected to the server — adjust if you need
+      // to target a specific device/channel.
+      digitalInput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state: digitalInput.state
+        });
+        setButtonVisual(digitalInput.state === true);
+      };
+
+      digitalInput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setButtonVisual(false);
+      };
+
+      digitalInput.onStateChange = (state) => {
+        setButtonVisual(!state);
+        updateRawStatePanel({
+          status: "State change",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state: state,
+          timestamp: new Date().toISOString()
+        });
+      };
+
+      await digitalInput.open(5000);
+
+      setConnectedUI(true);
+    }
+
+    async function disconnectFromPhidgetServer() {
+      if (digitalInput) {
+        try {
+          await digitalInput.close();
+        } catch (error) {
+          // Channel may already be closed — nothing to do here.
+        }
+        digitalInput = null;
+      }
+      setButtonVisual(false);
+      setConnectedUI(false);
+      updateRawStatePanel({ status: "Disconnected" });
+    }
+
+    connectionForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const address = serverAddressInput.value.trim();
+      const port = parseInt(serverPortInput.value, 10);
+
+      try {
+        updateRawStatePanel({ status: "Connecting..." });
+        await connectToPhidgetServer(address, port);
+      } catch (error) {
+        updateRawStatePanel({ connectionError: String(error) });
+        setConnectedUI(false);
+      }
+    });
+
+    disconnectButton.addEventListener("click", disconnectFromPhidgetServer);
+  </script>
+
+</body>
+</html>
