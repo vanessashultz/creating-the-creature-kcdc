@@ -4,19 +4,15 @@ Please complete this **before** the workshop. It takes about 15 minutes, most of
 
 If you get stuck, skip to [Troubleshooting](#troubleshooting) at the bottom, or reach out ahead of time so we can sort it out before the session starts.
 
----
-
 ## What you need
 
 - A computer running Windows, macOS, or Linux
 - The Arduino Nano Every board
 - The a microUSB cable and any adapters needed to connect to your laptop
 
----
-
 ## 1. Install and Open the Arduino IDE
 
-Download **Arduino IDE 2.x** from [arduino.cc/en/software](https://www.arduino.cc/en/software).
+If you haven't already, download **Arduino IDE 2.x** from [arduino.cc/en/software](https://www.arduino.cc/en/software).
 
 Get the 2.x version, not Legacy 1.8.x.
 
@@ -57,8 +53,6 @@ groups
 
 You should see `dialout` in the list.
 
----
-
 ## 2. Install the board core
 
 This is the step people skip. Nothing works without it.
@@ -73,8 +67,6 @@ This is the step people skip. Nothing works without it.
 4. Wait for it to finish. It's a few hundred MB and can take several minutes.
 
 > You do **not** need "Arduino AVR Boards." That's a different core for a different board.
-
----
 
 ## 3. Connect the Board to Laptop
 Connect the microUSB cable to your laptop. You may need to "allow" this accessory to be connected.
@@ -103,72 +95,34 @@ Click it.
 *If the IDE offers to install the megaAVR core (should have installed before), click **Yes**.*
 ![alt text](images/megaAVR_prompt.png)
 
-That's it. You're set up!
+That's it. The IDE is ready!
+
+## 5. Setting up Ground Rail
+
+Multiple components need to share a common ground connection. The blue rails on each side of the breadboard are designed for this as they run the full length of the board so anything can tap into them.
+
+> Note: the left and right rails are usually **not connected to each other**. If you have components on both sides, each side needs its own ground jumper. This workshop will have inputs on the left and outputs on the right, so we will need to do this for both sides.
+
+1. Find a small male-to-male jumper wire with in a baggie labeled **"GND"**
+
+2. Plug one end into **row 14** on the breadboard (Notice that the connecting "row" on the Arduino Nano has a white circle around it that helps identify your ground)
+
+3. Plug the other end into any pin on the **left blue rail** (I would suggest you choose pins at the bottom of the breadboard in order to have enough space for our connections up top)
+
+4. Repeat with a second jumper: one end into row 14 (or any row already connected to it), the other end into any pin on the **right blue rail**
+
+> Each blue rail is a ground rail. Once connected, any component near that rail can tap into it instead of running its own wire all the way back to the Arduino.
+
+## 6. Setting up Power Rail
+
+Just like ground, components need to share a power connection. The red rail on the side of the breadboard works the same way as the blue rail, but for power.
+
+1. Find a small male-to-male jumper wire with in a baggie labeled **"5V"**
+
+2. Plug one end into **row 12** on the breadboard (12a or 12b)
+
+3. Plug the other end into any pin on the **red rail** (the long strip running alongside the blue rail)
 
 ---
 
-## Troubleshooting
-
-### No board appears in the dropdown
-
-In order of likelihood:
-
-1. **Try a different USB-C cable.** This fixes it most of the time.
-2. **Try a different USB port** on your computer.
-3. **Plug directly into the computer,** not through a hub or dongle.
-
-### Windows: shows as "Unknown device" or an unnamed COM port
-
-Open Device Manager (right-click the Start button > Device Manager) and expand **Ports (COM & LPT)**.
-
-If you see a yellow warning triangle, right-click that entry and choose **Update driver > Search automatically for drivers**.
-
-### macOS: nothing appears in the dropdown
-
-Open Terminal and run this with the board plugged in:
-
-```
-ls /dev/cu.*
-```
-
-If you see something containing `usbmodem`, your Mac can see the board and the IDE just has a stale port list. Quit the IDE completely with **Cmd+Q** (closing the window isn't enough) and reopen it.
-
-If you see no `usbmodem` entry, it's the cable. Swap it.
-
-### Linux: permission denied, or "can't open device /dev/ttyACM0"
-
-You're not in the `dialout` group, or you haven't logged out since adding yourself. Run:
-
-```
-groups
-```
-
-If `dialout` isn't listed, go back to the [Linux install section](#linux) and log out and back in afterward.
-
-### Linux: nothing appears in the dropdown
-
-Check whether the kernel sees the board at all:
-
-```
-ls /dev/ttyACM*
-```
-
-If `/dev/ttyACM0` exists, the board is fine and it's a permissions or IDE issue. Restart the IDE.
-
-If nothing is there, run `dmesg | tail -20` right after plugging in. No new USB messages means it's the cable.
-
-If you installed via Snap or Flatpak, that's likely the cause. Switch to the AppImage.
-
-### The board list is empty, or says "No boards found"
-
-The core didn't install. Go back to [step 2](#2-install-the-board-core).
-
-### Upload fails with a red error
-
-1. Close the Serial Monitor if it's open, then try again
-2. Unplug the board, plug it back in, reselect the port, retry
-3. Quit and reopen the IDE
-
-### Something else
-
-Ask us for help and we'll see if we can get you working!
+> Having issues? See the [Troubleshooting guide](Troubleshooting.md).

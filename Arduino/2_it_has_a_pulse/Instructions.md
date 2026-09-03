@@ -17,18 +17,6 @@ Blink is the "hello world" of Arduino. It's worth uploading to any new board fir
 
 <video src="images/movies/blink_rate.mov" autoplay loop muted playsinline></video>
 
-----
-
-## Uplevel - Challenge Yourself with these Exercises
-
-1. The light is turning on and off every second. How can we make the light blink faster? Slower?
-2. How can we keep the light on for 5 seconds and turn off for 1 second?
-3. How fast can you make it blink before it stops looking like it's blinking?
-4. Can you make the LED blink SOS in Morse code? (dot = short blink, dash = long blink: ··· ——— ···)
-5. Can you create a heartbeat pattern — two quick blinks close together, then a long pause?
-
----
-
 ## Understanding The Code
 
 Every Arduino sketch has two required functions:
@@ -63,3 +51,12 @@ Runs **repeatedly forever** after `setup()` finishes. Each cycle:
 | `LED_BUILTIN` | A constant for the onboard LED pin (pin 13 on most Uno boards) |
 | `HIGH` / `LOW` | The two voltage states: on and off |
 | `delay(ms)` | Blocks execution for the given number of milliseconds |
+
+## Uplevel - Challenge Yourself with these Exercises
+Want to challenge yourself to see if you understand the code in here? Try these challenges!
+
+1. The light is turning on and off every second. How can we make the light blink faster? Slower?
+2. How can we keep the light on for 5 seconds and turn off for 1 second?
+3. How fast can you make it blink before it stops looking like it's blinking?
+4. Can you make the LED blink SOS in Morse code? (dot = short blink, dash = long blink: ··· ——— ···)
+5. Can you create a heartbeat pattern — two quick blinks close together, then a long pause?
