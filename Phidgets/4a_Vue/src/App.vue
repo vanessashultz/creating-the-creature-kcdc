@@ -9,7 +9,7 @@ import * as phidget22 from 'phidget22'
 let networkConnection = null
 let digitalInput = null
 let voltageRatioInput = null
-let digitalOutput = null
+let voltageOutput = null
 
 const serverAddress = ref('localhost')
 const serverPort = ref(8989)
@@ -58,12 +58,22 @@ async function connectToPhidgetServer(address, port) {
 
   await networkConnection.connect()
 
+  // Like the plain-HTML version, we only have one wire for this demo, so
+  // only the voltage output channel is opened here. openDigitalInput() and
+  // openVoltageRatioInput() are left in place below — swap the call here
+  // to try them instead.
+  // await openDigitalInput()
+  // await openVoltageRatioInput()
+  await openVoltageOutput()
+
+  connected.value = true
+}
+
+async function openDigitalInput() {
   digitalInput = new phidget22.DigitalInput()
   digitalInput.isHubPortDevice = true
   digitalInput.hubPort = 0
 
-  // Any channel on any hub connected to the server — adjust if you need
-  // to target a specific device/channel.
   digitalInput.onAttach = () => {
     rawState.value = {
       status: 'Attached',
@@ -95,7 +105,9 @@ async function connectToPhidgetServer(address, port) {
   }
 
   await digitalInput.open(5000)
+}
 
+async function openVoltageRatioInput() {
   voltageRatioInput = new phidget22.VoltageRatioInput()
   voltageRatioInput.isHubPortDevice = true
   voltageRatioInput.hubPort = 0
@@ -129,34 +141,35 @@ async function connectToPhidgetServer(address, port) {
   }
 
   await voltageRatioInput.open(5000)
+}
 
-  digitalOutput = new phidget22.DigitalOutput()
-  digitalOutput.isHubPortDevice = true
-  digitalOutput.hubPort = 0
+async function openVoltageOutput() {
+  voltageOutput = new phidget22.VoltageOutput()
+  voltageOutput.isHubPortDevice = true
+  voltageOutput.hubPort = 0
 
-  digitalOutput.onAttach = () => {
+  voltageOutput.onAttach = () => {
     rawState.value = {
       status: 'Attached',
-      deviceName: digitalOutput.deviceName,
-      serialNumber: digitalOutput.deviceSerialNumber,
-      channel: digitalOutput.channel,
-      state: digitalOutput.state
+      deviceName: voltageOutput.deviceName,
+      serialNumber: voltageOutput.deviceSerialNumber,
+      channel: voltageOutput.channel,
+      enabled: voltageOutput.enabled
     }
-    outputOn.value = digitalOutput.state === true
+    outputOn.value = voltageOutput.enabled === true
   }
 
-  digitalOutput.onDetach = () => {
+  voltageOutput.onDetach = () => {
     rawState.value = { status: 'Device detached' }
     outputOn.value = false
   }
 
-  await digitalOutput.open(5000)
-
-  connected.value = true
+  await voltageOutput.open(5000)
+  await voltageOutput.setVoltage(4) // Set the voltage as soon as the channel is open
 }
 
 async function disconnect() {
-  for (const channel of [digitalInput, voltageRatioInput, digitalOutput]) {
+  for (const channel of [digitalInput, voltageRatioInput, voltageOutput]) {
     if (channel) {
       try {
         await channel.close()
@@ -167,7 +180,7 @@ async function disconnect() {
   }
   digitalInput = null
   voltageRatioInput = null
-  digitalOutput = null
+  voltageOutput = null
 
   buttonPressed.value = false
   voltageRatio.value = null
@@ -177,25 +190,25 @@ async function disconnect() {
 }
 
 async function toggleOutput() {
-  if (!digitalOutput) {
+  if (!voltageOutput) {
     return
   }
 
-  const nextState = !(digitalOutput.state === true)
+  const nextState = !voltageOutput.enabled
 
   try {
-    await digitalOutput.setState(nextState)
+    await voltageOutput.setEnabled(nextState)
     outputOn.value = nextState
     rawState.value = {
       status: 'State change',
-      deviceName: digitalOutput.deviceName,
-      serialNumber: digitalOutput.deviceSerialNumber,
-      channel: digitalOutput.channel,
-      state: nextState,
+      deviceName: voltageOutput.deviceName,
+      serialNumber: voltageOutput.deviceSerialNumber,
+      channel: voltageOutput.channel,
+      enabled: nextState,
       timestamp: new Date().toISOString()
     }
   } catch (error) {
-    rawState.value = { setStateError: String(error) }
+    rawState.value = { setEnabledError: String(error) }
   }
 }
 </script>
@@ -242,7 +255,7 @@ async function toggleOutput() {
   </section>
 
   <section>
-    <h2>Digital Output</h2>
+    <h2>Voltage Output</h2>
     <button
       class="output-button"
       :class="outputOn ? 'on' : 'off'"

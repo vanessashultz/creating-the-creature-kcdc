@@ -103,7 +103,7 @@ the browser's default reload behavior, so that guard isn't needed here.
 The parts of the original code that talk to actual hardware barely
 change. `connectToPhidgetServer` and `disconnectFromPhidgetServer`
 become `async` methods on the component; `digitalInput`,
-`voltageRatioInput`, and `digitalOutput` become `private` instance
+`voltageRatioInput`, and `voltageOutput` become `private` instance
 fields instead of `let` variables at file scope:
 
 ```ts
@@ -143,11 +143,16 @@ private updateRawState(stateObject: unknown): void {
 ```
 
 The `try`/`catch` around each channel's `.close()` in
-`disconnectFromPhidgetServer`, and the guard clause in the digital
-output's click handler (`if (!digitalOutput) { return; }` from
+`disconnectFromPhidgetServer`, and the guard clause in the voltage
+output's click handler (`if (!this.voltageOutput) { return; }` from
 `example3.md`), carry over unchanged — hardware can still be unplugged
 mid-session or a server can still vanish regardless of which framework
-is drawing the UI.
+is drawing the UI. `example3`'s component also carries over
+`example3.md`'s "one wire" limitation: it only ever opens the voltage
+output channel (`phidget22.VoltageOutput`, using `.enabled`/`setEnabled()`
+instead of `DigitalOutput`'s `.state`/`setState()`), since `example1` and
+`example2` already cover the digital input and voltage ratio channels as
+their own standalone demos.
 
 ## Step 5 — One component per example, wired up with routes
 
@@ -161,7 +166,7 @@ independent, single-channel demos:
 src/app/
   example1/  (digital input — the button monitor)
   example2/  (voltage ratio input)
-  example3/  (digital output control)
+  example3/  (voltage output control)
 ```
 
 They're registered as routes and reachable from a small nav bar in the
@@ -182,7 +187,7 @@ export const routes: Routes = [
 <nav class="example-nav">
   <a routerLink="/example1" routerLinkActive="active">Example 1 — Button</a>
   <a routerLink="/example2" routerLinkActive="active">Example 2 — Voltage Ratio</a>
-  <a routerLink="/example3" routerLinkActive="active">Example 3 — Digital Output</a>
+  <a routerLink="/example3" routerLinkActive="active">Example 3 — Voltage Output</a>
 </nav>
 
 <router-outlet />
@@ -203,5 +208,7 @@ as the components themselves instead of duplicated three times.
    independent route with its own connection form.
 3. Enter your Phidget Network Server's address and port and connect, the
    same way you would with the plain `.html` files. The behavior —
-   including the button's `!state` inversion and the digital output's
+   including the button's `!state` inversion and the voltage output's
    optimistic-update-free click handler — is unchanged from the originals.
+   Example 3 expects a voltage output device (an LED) on hub port 0, the
+   same single-wire setup `example3.md` ends on.

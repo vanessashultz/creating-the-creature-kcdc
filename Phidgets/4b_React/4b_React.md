@@ -11,28 +11,35 @@ The React versions live at `app/routes/example1.tsx`, `example2.tsx`, and
 `example3.tsx`, and are reachable at `/example1`, `/example2`, `/example3`
 once the dev server is running.
 
-## Step 1 — Load the Phidget22 SDK once, globally
+## Step 1 — Install the Phidget22 SDK as a dependency
 
-The original files each pulled in the SDK with a `<script>` tag in `<head>`.
-In a React Router app there's one HTML shell (`app/root.tsx`) shared by every
-route, so the script only needs to be added once, in `Layout`:
+The original files pulled in the SDK with a `<script>` tag pointed at a CDN.
+A React Router app already has a build pipeline, so instead the SDK is
+installed like any other package:
 
-```tsx
-<script src="https://unpkg.com/phidget22/browser/phidget22.js"></script>
+```bash
+npm install phidget22
 ```
 
-This makes the same global `phidget22` object available on `window` in every
-route component, exactly as it was available globally in the plain HTML
-pages.
+and imported directly in each route component:
 
-## Step 2 — Type the global SDK
+```tsx
+import * as phidget22 from "phidget22";
+```
 
-The vanilla JS examples never needed types. TypeScript does, so
-`app/phidget22.d.ts` declares a minimal `namespace phidget22` (just the
-classes and members the examples actually use: `NetworkConnection`,
-`DigitalInput`, `VoltageRatioInput`, `DigitalOutput`) and augments
-`Window` with a `phidget22` property. This is intentionally thin — just
-enough shape to avoid `any` — not a full port of the SDK's real types.
+`phidget22.NetworkConnection`, `phidget22.DigitalInput`, and the rest are
+then used exactly as they were off the old global — just referenced without
+the `window.` prefix. This also means the SDK is version-pinned in
+`package.json` and bundled by Vite instead of fetched from a CDN at runtime.
+
+## Step 2 — Drop the hand-rolled types
+
+The vanilla JS examples never needed types. TypeScript does, but the
+`phidget22` package ships its own type declarations, so there's no need to
+hand-write ambient types the way an earlier pass of this example did with
+`app/phidget22.d.ts` — importing the package gives full, accurate types for
+`NetworkConnection`, `DigitalInput`, `VoltageRatioInput`, `VoltageOutput`,
+and everything else in the SDK for free.
 
 ## Step 3 — Replace DOM lookups with React state and refs
 
@@ -42,7 +49,7 @@ Every `document.getElementById(...)` in the original files became either:
   connection status, button-pressed state, voltage ratio, output state, and
   the raw state panel's contents.
 - **A `useRef`**, for the live Phidget channel objects themselves
-  (`digitalInputRef`, `voltageRatioInputRef`, `digitalOutputRef`). These
+  (`digitalInputRef`, `voltageRatioInputRef`, `voltageOutputRef`). These
   need to persist across renders without *causing* a re-render when
   assigned, which is exactly what `useRef` is for — the same role the plain
   `let digitalInput = null;` variables played in the HTML versions.
@@ -69,8 +76,14 @@ locally-created object which is then also stored in the matching ref
 This mirrors the additive pattern from `example2.md`/`example3.md`
 directly: `example2.tsx` is `example1.tsx` with a second channel's setup,
 state, and cleanup inserted alongside the first; `example3.tsx` adds a third
-channel the same way — nothing from the earlier channels' code changed to
-make room for the new one.
+channel's setup and cleanup the same way — nothing from the earlier
+channels' code changed to make room for the new one. It also carries over
+`example3.md`'s "one wire" limitation: `connectToPhidgetServer` in
+`example3.tsx` defines `openDigitalInput()`, `openVoltageRatioInput()`, and
+`openVoltageOutput()` as local helper functions, but only calls
+`openVoltageOutput()` — the other two calls are left in place, commented
+out, exactly like the commented-out calls in `example3.md`'s finished HTML
+file.
 
 ## Step 5 — Turn the connection form into a controlled form
 
@@ -115,7 +128,12 @@ and the home page (`app/routes/home.tsx`) got plain links to `/example1`,
 3. Visit `/example1`, `/example2`, `/example3` in the browser.
 4. Same as the HTML versions: enter the Phidget Network Server's address and
    port (default `localhost:8989`), click Connect, and interact with
-   whatever hardware is plugged into hub port 0 for each channel type.
+   whatever hardware is plugged into hub port 0 for each page — a button
+   for `/example1`, a voltage ratio sensor for `/example2`, and a voltage
+   output device (an LED) for `/example3`, which only opens that one
+   channel by default. To try the button or ratio sensor on `/example3`
+   instead, swap which `open...()` call is commented out in
+   `connectToPhidgetServer`.
 
 ## What's genuinely different from the HTML versions
 

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import * as phidget22 from "phidget22";
 import type { Route } from "./+types/example2";
 import "../phidget-examples.css";
 
@@ -26,7 +27,7 @@ export default function Example2() {
   }
 
   async function connectToPhidgetServer(address: string, port: number) {
-    const connection = new window.phidget22.NetworkConnection({
+    const connection = new phidget22.NetworkConnection({
       hostname: address,
       port: port,
       onError: (code, message) => updateRawStatePanel({ connectionError: { code, message } }),
@@ -39,7 +40,7 @@ export default function Example2() {
 
     await connection.connect();
 
-    const digitalInput = new window.phidget22.DigitalInput();
+    const digitalInput = new phidget22.DigitalInput();
     digitalInputRef.current = digitalInput;
 
     digitalInput.isHubPortDevice = true;
@@ -77,7 +78,7 @@ export default function Example2() {
 
     await digitalInput.open(5000);
 
-    const voltageRatioInput = new window.phidget22.VoltageRatioInput();
+    const voltageRatioInput = new phidget22.VoltageRatioInput();
     voltageRatioInputRef.current = voltageRatioInput;
 
     voltageRatioInput.isHubPortDevice = true;

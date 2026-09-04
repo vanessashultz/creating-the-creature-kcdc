@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
+import * as phidget22 from "phidget22";
 import type { Route } from "./+types/example3";
 import "../phidget-examples.css";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Phidget Button + Voltage Ratio + Digital Output" }];
+  return [{ title: "Phidget Button + Voltage Ratio + Voltage Output" }];
 }
 
 export default function Example3() {
@@ -21,14 +22,14 @@ export default function Example3() {
   // The Phidget channel objects — kept in refs so re-renders don't recreate them
   const digitalInputRef = useRef<phidget22.DigitalInput | null>(null);
   const voltageRatioInputRef = useRef<phidget22.VoltageRatioInput | null>(null);
-  const digitalOutputRef = useRef<phidget22.DigitalOutput | null>(null);
+  const voltageOutputRef = useRef<phidget22.VoltageOutput | null>(null);
 
   function updateRawStatePanel(stateObject: unknown) {
     setRawState(stateObject);
   }
 
   async function connectToPhidgetServer(address: string, port: number) {
-    const connection = new window.phidget22.NetworkConnection({
+    const connection = new phidget22.NetworkConnection({
       hostname: address,
       port: port,
       onError: (code, message) => updateRawStatePanel({ connectionError: { code, message } }),
@@ -41,109 +42,122 @@ export default function Example3() {
 
     await connection.connect();
 
-    const digitalInput = new window.phidget22.DigitalInput();
-    digitalInputRef.current = digitalInput;
-
-    digitalInput.isHubPortDevice = true;
-    digitalInput.hubPort = 0;
-
-    // Any channel on any hub connected to the server — adjust if you need
-    // to target a specific device/channel.
-    digitalInput.onAttach = () => {
-      updateRawStatePanel({
-        status: "Attached",
-        deviceName: digitalInput.deviceName,
-        serialNumber: digitalInput.deviceSerialNumber,
-        channel: digitalInput.channel,
-        state: digitalInput.state,
-      });
-      setIsButtonPressed(digitalInput.state === true);
-    };
-
-    digitalInput.onDetach = () => {
-      updateRawStatePanel({ status: "Device detached" });
-      setIsButtonPressed(false);
-    };
-
-    digitalInput.onStateChange = (state) => {
-      setIsButtonPressed(!state);
-      updateRawStatePanel({
-        status: "State change",
-        deviceName: digitalInput.deviceName,
-        serialNumber: digitalInput.deviceSerialNumber,
-        channel: digitalInput.channel,
-        state,
-        timestamp: new Date().toISOString(),
-      });
-    };
-
-    await digitalInput.open(5000);
-
-    const voltageRatioInput = new window.phidget22.VoltageRatioInput();
-    voltageRatioInputRef.current = voltageRatioInput;
-
-    voltageRatioInput.isHubPortDevice = true;
-    voltageRatioInput.hubPort = 0;
-
-    // Any channel on any hub connected to the server — adjust if you need
-    // to target a specific device/channel.
-    voltageRatioInput.onAttach = () => {
-      updateRawStatePanel({
-        status: "Attached",
-        deviceName: voltageRatioInput.deviceName,
-        serialNumber: voltageRatioInput.deviceSerialNumber,
-        channel: voltageRatioInput.channel,
-        voltageRatio: voltageRatioInput.voltageRatio,
-      });
-      setVoltageRatio(voltageRatioInput.voltageRatio);
-    };
-
-    voltageRatioInput.onDetach = () => {
-      updateRawStatePanel({ status: "Device detached" });
-      setVoltageRatio(null);
-    };
-
-    voltageRatioInput.onVoltageRatioChange = (ratio) => {
-      setVoltageRatio(ratio);
-      updateRawStatePanel({
-        status: "Voltage ratio change",
-        deviceName: voltageRatioInput.deviceName,
-        serialNumber: voltageRatioInput.deviceSerialNumber,
-        channel: voltageRatioInput.channel,
-        voltageRatio: ratio,
-        timestamp: new Date().toISOString(),
-      });
-    };
-
-    await voltageRatioInput.open(5000);
-
-    const digitalOutput = new window.phidget22.DigitalOutput();
-    digitalOutputRef.current = digitalOutput;
-
-    digitalOutput.isHubPortDevice = true;
-    digitalOutput.hubPort = 0;
-
-    // Any channel on any hub connected to the server — adjust if you need
-    // to target a specific device/channel.
-    digitalOutput.onAttach = () => {
-      updateRawStatePanel({
-        status: "Attached",
-        deviceName: digitalOutput.deviceName,
-        serialNumber: digitalOutput.deviceSerialNumber,
-        channel: digitalOutput.channel,
-        state: digitalOutput.state,
-      });
-      setIsOutputOn(digitalOutput.state === true);
-    };
-
-    digitalOutput.onDetach = () => {
-      updateRawStatePanel({ status: "Device detached" });
-      setIsOutputOn(false);
-    };
-
-    await digitalOutput.open(5000);
+    // Like the plain-HTML version, we only have one wire for this demo, so
+    // only the voltage output channel is opened here. openDigitalInput()
+    // and openVoltageRatioInput() are left in place below — swap the call
+    // here to try them instead.
+    // await openDigitalInput();
+    // await openVoltageRatioInput();
+    await openVoltageOutput();
 
     setIsConnected(true);
+
+    async function openDigitalInput() {
+      const digitalInput = new phidget22.DigitalInput();
+      digitalInputRef.current = digitalInput;
+
+      digitalInput.isHubPortDevice = true;
+      digitalInput.hubPort = 0;
+
+      // Any channel on any hub connected to the server — adjust if you need
+      // to target a specific device/channel.
+      digitalInput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state: digitalInput.state,
+        });
+        setIsButtonPressed(digitalInput.state === true);
+      };
+
+      digitalInput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setIsButtonPressed(false);
+      };
+
+      digitalInput.onStateChange = (state) => {
+        setIsButtonPressed(!state);
+        updateRawStatePanel({
+          status: "State change",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state,
+          timestamp: new Date().toISOString(),
+        });
+      };
+
+      await digitalInput.open(5000);
+    }
+
+    async function openVoltageRatioInput() {
+      const voltageRatioInput = new phidget22.VoltageRatioInput();
+      voltageRatioInputRef.current = voltageRatioInput;
+
+      voltageRatioInput.isHubPortDevice = true;
+      voltageRatioInput.hubPort = 0;
+
+      // Any channel on any hub connected to the server — adjust if you need
+      // to target a specific device/channel.
+      voltageRatioInput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: voltageRatioInput.deviceName,
+          serialNumber: voltageRatioInput.deviceSerialNumber,
+          channel: voltageRatioInput.channel,
+          voltageRatio: voltageRatioInput.voltageRatio,
+        });
+        setVoltageRatio(voltageRatioInput.voltageRatio);
+      };
+
+      voltageRatioInput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setVoltageRatio(null);
+      };
+
+      voltageRatioInput.onVoltageRatioChange = (ratio) => {
+        setVoltageRatio(ratio);
+        updateRawStatePanel({
+          status: "Voltage ratio change",
+          deviceName: voltageRatioInput.deviceName,
+          serialNumber: voltageRatioInput.deviceSerialNumber,
+          channel: voltageRatioInput.channel,
+          voltageRatio: ratio,
+          timestamp: new Date().toISOString(),
+        });
+      };
+
+      await voltageRatioInput.open(5000);
+    }
+
+    async function openVoltageOutput() {
+      const voltageOutput = new phidget22.VoltageOutput();
+      voltageOutputRef.current = voltageOutput;
+
+      voltageOutput.isHubPortDevice = true;
+      voltageOutput.hubPort = 0;
+
+      voltageOutput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: voltageOutput.deviceName,
+          serialNumber: voltageOutput.deviceSerialNumber,
+          channel: voltageOutput.channel,
+          enabled: voltageOutput.enabled,
+        });
+        setIsOutputOn(voltageOutput.enabled === true);
+      };
+
+      voltageOutput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setIsOutputOn(false);
+      };
+
+      await voltageOutput.open(5000);
+      await voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
+    }
   }
 
   async function disconnectFromPhidgetServer() {
@@ -163,13 +177,13 @@ export default function Example3() {
       }
       voltageRatioInputRef.current = null;
     }
-    if (digitalOutputRef.current) {
+    if (voltageOutputRef.current) {
       try {
-        await digitalOutputRef.current.close();
+        await voltageOutputRef.current.close();
       } catch (error) {
         // Channel may already be closed — nothing to do here.
       }
-      digitalOutputRef.current = null;
+      voltageOutputRef.current = null;
     }
     setIsButtonPressed(false);
     setVoltageRatio(null);
@@ -192,28 +206,28 @@ export default function Example3() {
     }
   }
 
-  // Toggle the digital output each time the button is pressed
+  // Toggle the voltage output each time the button is pressed
   async function handleOutputButtonClick() {
-    const digitalOutput = digitalOutputRef.current;
-    if (!digitalOutput) {
+    const voltageOutput = voltageOutputRef.current;
+    if (!voltageOutput) {
       return;
     }
 
-    const nextState = !(digitalOutput.state === true);
+    const nextState = !voltageOutput.enabled;
 
     try {
-      await digitalOutput.setState(nextState);
+      await voltageOutput.setEnabled(nextState);
       setIsOutputOn(nextState);
       updateRawStatePanel({
         status: "State change",
-        deviceName: digitalOutput.deviceName,
-        serialNumber: digitalOutput.deviceSerialNumber,
-        channel: digitalOutput.channel,
-        state: nextState,
+        deviceName: voltageOutput.deviceName,
+        serialNumber: voltageOutput.deviceSerialNumber,
+        channel: voltageOutput.channel,
+        enabled: nextState,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      updateRawStatePanel({ setStateError: String(error) });
+      updateRawStatePanel({ setEnabledError: String(error) });
     }
   }
 
@@ -222,7 +236,7 @@ export default function Example3() {
 
   return (
     <div className="phidget-page">
-      <h1>Phidget Button + Voltage Ratio + Digital Output</h1>
+      <h1>Phidget Button + Voltage Ratio + Voltage Output</h1>
 
       <section>
         <form className="connection-form" onSubmit={handleConnectSubmit}>
@@ -277,7 +291,7 @@ export default function Example3() {
       </section>
 
       <section>
-        <h2>Digital Output</h2>
+        <h2>Voltage Output</h2>
         <button
           id="outputButton"
           type="button"

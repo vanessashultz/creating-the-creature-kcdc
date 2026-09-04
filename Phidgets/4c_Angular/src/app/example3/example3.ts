@@ -21,7 +21,7 @@ export class Example3 {
   rawState = signal('Waiting for connection...');
 
   // Phidget object — created fresh on each connection attempt
-  private digitalOutput: any = null;
+  private voltageOutput: any = null;
 
   async connect(): Promise<void> {
     this.updateRawState({ status: 'Connecting...' });
@@ -41,30 +41,31 @@ export class Example3 {
 
       await connection.connect();
 
-      this.digitalOutput = new phidget22.DigitalOutput();
+      this.voltageOutput = new phidget22.VoltageOutput();
 
-      this.digitalOutput.isHubPortDevice = true;
-      this.digitalOutput.hubPort = 0;
+      this.voltageOutput.isHubPortDevice = true;
+      this.voltageOutput.hubPort = 0;
 
       // Any channel on any hub connected to the server — adjust if you need
       // to target a specific device/channel.
-      this.digitalOutput.onAttach = () => {
+      this.voltageOutput.onAttach = () => {
         this.updateRawState({
           status: 'Attached',
-          deviceName: this.digitalOutput.deviceName,
-          serialNumber: this.digitalOutput.deviceSerialNumber,
-          channel: this.digitalOutput.channel,
-          state: this.digitalOutput.state,
+          deviceName: this.voltageOutput.deviceName,
+          serialNumber: this.voltageOutput.deviceSerialNumber,
+          channel: this.voltageOutput.channel,
+          enabled: this.voltageOutput.enabled,
         });
-        this.outputOn.set(this.digitalOutput.state === true);
+        this.outputOn.set(this.voltageOutput.enabled === true);
       };
 
-      this.digitalOutput.onDetach = () => {
+      this.voltageOutput.onDetach = () => {
         this.updateRawState({ status: 'Device detached' });
         this.outputOn.set(false);
       };
 
-      await this.digitalOutput.open(5000);
+      await this.voltageOutput.open(5000);
+      await this.voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
 
       this.setConnected(true);
     } catch (error) {
@@ -74,13 +75,13 @@ export class Example3 {
   }
 
   async disconnect(): Promise<void> {
-    if (this.digitalOutput) {
+    if (this.voltageOutput) {
       try {
-        await this.digitalOutput.close();
+        await this.voltageOutput.close();
       } catch {
         // Channel may already be closed — nothing to do here.
       }
-      this.digitalOutput = null;
+      this.voltageOutput = null;
     }
 
     this.outputOn.set(false);
@@ -88,27 +89,27 @@ export class Example3 {
     this.updateRawState({ status: 'Disconnected' });
   }
 
-  // Toggle the digital output each time the button is pressed
+  // Toggle the voltage output each time the button is pressed
   async toggleOutput(): Promise<void> {
-    if (!this.digitalOutput) {
+    if (!this.voltageOutput) {
       return;
     }
 
-    const nextState = !(this.digitalOutput.state === true);
+    const nextState = !this.voltageOutput.enabled;
 
     try {
-      await this.digitalOutput.setState(nextState);
+      await this.voltageOutput.setEnabled(nextState);
       this.outputOn.set(nextState);
       this.updateRawState({
         status: 'State change',
-        deviceName: this.digitalOutput.deviceName,
-        serialNumber: this.digitalOutput.deviceSerialNumber,
-        channel: this.digitalOutput.channel,
-        state: nextState,
+        deviceName: this.voltageOutput.deviceName,
+        serialNumber: this.voltageOutput.deviceSerialNumber,
+        channel: this.voltageOutput.channel,
+        enabled: nextState,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      this.updateRawState({ setStateError: String(error) });
+      this.updateRawState({ setEnabledError: String(error) });
     }
   }
 
