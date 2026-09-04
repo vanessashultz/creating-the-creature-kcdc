@@ -203,9 +203,9 @@
     </div>
   </section>
 
-  <!-- The voltage output visual-->
+  <!-- The digital output visual-->
   <section>
-    <h2>Voltage Output</h2>
+    <h2>Digital Output</h2>
     <button id="outputButton" class="off" type="button" disabled>OFF</button>
   </section>
 
@@ -231,7 +231,7 @@
     let connection;
     let digitalInput;
     let voltageRatioInput;
-    let voltageOutput;
+    let digitalOutput;
 
     /// ---------------------
     /// Helper functions
@@ -294,7 +294,7 @@
 
       //await openDigitalInput();
       //await openVoltageRatioInput();
-      await openVoltageOutput();
+      await openDigitalOutput();
 
       setConnectedUI(true);
     }
@@ -374,30 +374,30 @@
       await voltageRatioInput.open(5000);
     }
 
-    async function openVoltageOutput() {
-      voltageOutput = new phidget22.VoltageOutput();
+    async function openDigitalOutput() {
+      digitalOutput = new phidget22.DigitalOutput();
 
-      voltageOutput.isHubPortDevice = true;
-      voltageOutput.hubPort = 0;
+      digitalOutput.isHubPortDevice = false;
+      digitalOutput.hubPort = 0;
+      digitalOutput.channel = 0;
 
-      voltageOutput.onAttach = async () => {
+      digitalOutput.onAttach = async () => {
         updateRawStatePanel({
           status: "Attached",
-          deviceName: voltageOutput.deviceName,
-          serialNumber: voltageOutput.deviceSerialNumber,
-          channel: voltageOutput.channel,
-          enabled: voltageOutput.enabled,
+          deviceName: digitalOutput.deviceName,
+          serialNumber: digitalOutput.deviceSerialNumber,
+          channel: digitalOutput.channel,
+          state: digitalOutput.state,
         });
-        setOutputButtonVisual(voltageOutput.enabled === true);
+        setOutputButtonVisual(digitalOutput.state === true);
       };
 
-      voltageOutput.onDetach = () => {
+      digitalOutput.onDetach = () => {
         updateRawStatePanel({ status: "Device detached" });
         setOutputButtonVisual(false);
       }
 
-      await voltageOutput.open(5000);
-      await voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
+      await digitalOutput.open(5000);
     }
 
     async function disconnectFromPhidgetServer() {
@@ -422,14 +422,14 @@
         voltageRatioInput = null;
       }
 
-      if (voltageOutput) {
+      if (digitalOutput) {
         try {
-          await voltageOutput.close();
+          await digitalOutput.close();
         } catch (error) {
           console.warn(error);
           // Channel may already be closed - nothing to do here.
         }
-        voltageOutput = null;
+        digitalOutput = null;
       }
 
       setButtonVisual(false);
@@ -463,26 +463,26 @@
     disconnectButton.addEventListener("click", disconnectFromPhidgetServer);
 
     outputButton.addEventListener("click", async () => {
-      if (!voltageOutput) {
+      if (!digitalOutput) {
         return;
       }
 
-      const nextState = !voltageOutput.enabled;
+      const nextState = !digitalOutput.state;
 
       try {
-        await voltageOutput.setEnabled(nextState);
+        await digitalOutput.setState(nextState);
         setOutputButtonVisual(nextState);
         updateRawStatePanel({
           status: "State change",
           deviceName: digitalOutput.deviceName,
           serialNumber: digitalOutput.deviceSerialNumber,
           channel: digitalOutput.channel,
-          enabled: nextState,
+          state: nextState,
           timestamp: new Date().toISOString()
         });
       }
       catch (error) {
-        updateRawStatePanel({ status: "Error", setEnabledError: String(error) });
+        updateRawStatePanel({ status: "Error", setStateError: String(error) });
       }
     });
   </script>

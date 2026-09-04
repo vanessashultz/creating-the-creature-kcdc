@@ -2,7 +2,7 @@
 
 This guide assumes you've been through [`1_DigitalInput.md`](1_DigitalInput.md) and [`2_VoltageRatio.md`](2_VoltageRatio.md).
 
-We're extending that file once more, to handle a *third* Phidget channel alongside the other two: a **voltage ratio output** (to power an LED wired to a Phidget hub), controlled by clicking a button in the page.
+We're extending that file once more, to handle a *third* Phidget channel alongside the other two: a **digital output** (to power an LED wired to a Phidget hub), controlled by clicking a button in the page.
 
 This is the first channel in the workshop that *writes* to hardware instead of only reading from it — data will flow from a click in the browser out to the physical device, not just the other way around.
 
@@ -56,9 +56,9 @@ This is the same colored-circle look as `#buttonVisual`, but this time the circl
 You now have a `Button State` section and a `Voltage Ratio` section in the body. Add a new section after them:
 
 ```html
-<!-- The voltage output visual-->
+<!-- The digital output visual-->
 <section>
-  <h2>Voltage Output</h2>
+  <h2>Digital Output</h2>
   <button id="outputButton" class="off" type="button" disabled>OFF</button>
 </section>
 ```
@@ -89,7 +89,7 @@ let voltageRatioInput;
 Add a third declaration after them:
 
 ```javascript
-let voltageOutput;
+let digitalOutput;
 ```
 
 ## Step 5 — Add a line to `setConnectedUI`
@@ -154,7 +154,7 @@ async function connectToPhidgetServer(address, port) {
 }
 ```
 
-Add a method to open the voltage output channel, and call this method from connectToPhidgetServer. Again, comment out the call to openVoltageRatioInput(). Phidget can handle multiple open channels, but we only have one wire for the demo today.
+Add a method to open the digital output channel, and call this method from connectToPhidgetServer. Again, comment out the call to openVoltageRatioInput(). Phidget can handle multiple open channels, but we only have one wire for the demo today.
 
 ```javascript
 async function connectToPhidgetServer(address, port) {
@@ -164,39 +164,48 @@ async function connectToPhidgetServer(address, port) {
 
   //await openDigitalInput();
   //await openVoltageRatioInput();
-  await openVoltageOutput();
+  await openDigitalOutput();
 
   setConnectedUI(true);
 }
 
-async function openVoltageOutput() {
-  voltageOutput = new phidget22.VoltageOutput();
+async function openDigitalOutput() {
+  digitalOutput = new phidget22.DigitalOutput();
 
-  voltageOutput.isHubPortDevice = true;
-  voltageOutput.hubPort = 0;
+  digitalOutput.isHubPortDevice = false;
+  digitalOutput.hubPort = 0;
+  digitalOutput.channel = 0;
 
-  voltageOutput.onAttach = async () => {
+  digitalOutput.onAttach = async () => {
     updateRawStatePanel({
       status: "Attached",
-      deviceName: voltageOutput.deviceName,
-      serialNumber: voltageOutput.deviceSerialNumber,
-      channel: voltageOutput.channel,
-      enabled: voltageOutput.enabled,
+      deviceName: digitalOutput.deviceName,
+      serialNumber: digitalOutput.deviceSerialNumber,
+      channel: digitalOutput.channel,
+      state: digitalOutput.state,
     });
-    setOutputButtonVisual(voltageOutput.enabled === true);
+    setOutputButtonVisual(digitalOutput.state === true);
   };
 
-  voltageOutput.onDetach = () => {
+  digitalOutput.onDetach = () => {
     updateRawStatePanel({ status: "Device detached" });
     setOutputButtonVisual(false);
   }
 
-  await voltageOutput.open(5000);
-  await voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
+  await digitalOutput.open(5000);
 }
 ```
 
-The most important thing to notice here is what's **missing** compared to the other two channels: there's no third callback like `onStateChange` or `onVoltageRatioChange`. Those existed because those channels are *inputs* — something in the physical world changes them, and the library needs a way to tell us "hey, that just happened." A `DigitalOutput` doesn't work that way: nothing changes its state except *us*, by calling a method on it (in Step 9). There's no external event to listen for, so there's no change callback to write. `onAttach` and `onDetach` are still here because "did we successfully connect to the device" is still something that happens to us, regardless of direction — and `onAttach` reads `voltageOutput.enabled` to sync the visual, useful in case the output was already on from a previous session.
+The most important thing to notice here is what's **missing** compared to the other two channels: there's no third callback like `onStateChange` or `onVoltageRatioChange`. Those existed because those channels are *inputs* — something in the physical world changes them, and the library needs a way to tell us "hey, that just happened." A `DigitalOutput` doesn't work that way: nothing changes its state except *us*, by calling a method on it (in Step 9). There's no external event to listen for, so there's no change callback to write. `onAttach` and `onDetach` are still here because "did we successfully connect to the device" is still something that happens to us, regardless of direction — and `onAttach` reads `digitalOutput.state` to sync the visual, useful in case the output was already on from a previous session.
+
+The other thing to notice is that this channel is addressed differently than `digitalInput` and `voltageRatioInput` above it. Those two set `isHubPortDevice = true` and `hubPort`. This one sets `hubPort` *and* `channel`, with no `isHubPortDevice` at all. Both `hubPort` and `channel` tell the Phidget library *which* physical channel to attach to, but `isHubPortDevice` changes what "physical channel" even means:
+
+- **`isHubPortDevice = true`** means the hub's port itself is the device — there's no smart peripheral on the other end, just a bare wire (a switch, an LED) connected straight to the port's raw pins. In that case the hub port number *is* the whole address, which is why `digitalInput` and `voltageRatioInput` only ever need `hubPort`.
+- **A real VINT peripheral — like your OUT1100 — is not a hub port device.** It's a separate board with its own onboard controller that plugs into a hub's VINT port and identifies itself to the software as an actual device, independent of what's wired directly to the port. So it isn't addressed by treating the port as the device; it's addressed the normal VINT way, with `isHubPortDevice` left unset (`false`).
+- **`hubPort`** still says which physical port the device is plugged into — that part doesn't go away just because it's a VINT device.
+- **`channel`** is needed on top of that because the OUT1100 exposes 4 outputs through that one connection. `channel = 0` means "the first output," `channel = 1` the second, and so on — `hubPort` picks the device, `channel` picks which of its outputs you mean.
+
+Which of these you need depends on your hardware. A bare-wire sensor/actuator on a hub port needs `isHubPortDevice`/`hubPort`, the way `digitalInput` and `voltageRatioInput` are set up. A multi-channel VINT device like the OUT1100 needs `hubPort` (to find the device) plus `channel` (to pick the output), with `isHubPortDevice` left off — as the code above does.
 
 ## Step 8 — Add cleanup for the digital output channel on disconnect
 
@@ -249,14 +258,14 @@ async function disconnectFromPhidgetServer() {
     voltageRatioInput = null;
   }
 
-  if (voltageOutput) {
+  if (digitalOutput) {
     try {
-      await voltageOutput.close();
+      await digitalOutput.close();
     } catch (error) {
       console.warn(error);
       // Channel may already be closed - nothing to do here.
     }
-    voltageOutput = null;
+    digitalOutput = null;
   }
   setButtonVisual(false);
   setRatioVisual(null);
@@ -276,40 +285,40 @@ Add this after the existing `disconnectButton.addEventListener(...)` line:
 
 ```javascript
 outputButton.addEventListener("click", async () => {
-  if (!voltageOutput) {
+  if (!digitalOutput) {
     return;
   }
 
-  const nextState = !voltageOutput.enabled;
+  const nextState = !digitalOutput.state;
 
   try {
-    await voltageOutput.setEnabled(nextState);
+    await digitalOutput.setState(nextState);
     setOutputButtonVisual(nextState);
     updateRawStatePanel({
       status: "State change",
       deviceName: digitalOutput.deviceName,
       serialNumber: digitalOutput.deviceSerialNumber,
       channel: digitalOutput.channel,
-      enabled: nextState,
+      state: nextState,
       timestamp: new Date().toISOString()
     });
   }
   catch (error) {
-    updateRawStatePanel({ status: "Error", setEnabledError: String(error) });
+    updateRawStatePanel({ status: "Error", setStateError: String(error) });
   }
 });
 ```
 
 Walking through it:
 
-- **The guard clause.** `if (!voltageOutput) { return; }` protects against a click landing before `voltageOutput` has been created, or after it's been set back to `null` on disconnect. In practice `outputButton.disabled` (Step 5) already prevents clicks in those states, but a disabled button can occasionally still receive a click in edge cases (e.g. a click that started before the button was disabled), so the check inside the handler is the real safety net.
-- **`const nextState = !voltageOutput.enabled;`** flips whatever the output's *current* state is. This reads the channel's own `.enabled` property — the same property `onAttach` read in Step 7 — rather than tracking a separate "is it on" variable ourselves. That matters: if the button's own tracked idea of the state ever drifted from the hardware's actual state, reading `.enabled` directly keeps them in sync instead of compounding an error.
-- **`await voltageOutput.setEnabled(nextState);`** is the new part conceptually: it's the first time in this series that we call a method that *changes* something on the physical device, rather than only reading a property or registering a callback. Like `connection.connect()` and `digitalOutput.open()`, it's `async` because sending a command to hardware over the network takes time and can fail.
+- **The guard clause.** `if (!digitalOutput) { return; }` protects against a click landing before `digitalOutput` has been created, or after it's been set back to `null` on disconnect. In practice `outputButton.disabled` (Step 5) already prevents clicks in those states, but a disabled button can occasionally still receive a click in edge cases (e.g. a click that started before the button was disabled), so the check inside the handler is the real safety net.
+- **`const nextState = !digitalOutput.state;`** flips whatever the output's *current* state is. This reads the channel's own `.state` property — the same property `onAttach` read in Step 7 — rather than tracking a separate "is it on" variable ourselves. That matters: if the button's own tracked idea of the state ever drifted from the hardware's actual state, reading `.state` directly keeps them in sync instead of compounding an error.
+- **`await digitalOutput.setState(nextState);`** is the new part conceptually: it's the first time in this series that we call a method that *changes* something on the physical device, rather than only reading a property or registering a callback. Like `connection.connect()` and `digitalOutput.open()`, it's `async` because sending a command to hardware over the network takes time and can fail.
 - **We only update the visual and raw state panel *after* `setState` succeeds** (not before it, and not optimistically). If the command fails — the device was unplugged mid-click, say — the `catch` block logs the error instead, and the button's visual stays at whatever it last confirmed, rather than showing "ON" for an output that's actually still off. This is a deliberate choice: it's slightly slower-feeling than updating the display immediately, but it means the page never lies about the hardware's real state.
 
 ## Trying it yourself
 
-1. Make sure a Phidget Network Server is running and reachable, with a voltage output device all connected to their respective hub ports, connect an led to your voltage output device to see changes made to teh device.
+1. Make sure a Phidget Network Server is running and reachable, with a digital output device all connected to their respective hub ports, connect an led to your digital output device to see changes made to teh device.
 2. Open your updated file in a browser.
 3. Enter the server's address and port (default `localhost:8989`) and click Connect.
 4. Watch the raw state panel as the output channel comes online. Click the output button — the physical output device should switch on and off along with the on-screen button. You should the LED turn on and off as the state changes.
@@ -318,4 +327,4 @@ If the on-screen output button changes but the physical device doesn't, double-c
 
 ## Bonus Round
 
-The Voltage Output can output a range. We immediately set the voltage to 4 volts, enough to turn on the led once the device is enabled. Try combining the Voltage Output with the Voltage Ratio Input (slider) to create a dimmable LED instead of one that just turns off and on.
+A `DigitalOutput` only ever has two states, on or off. Try combining the Digital Output with the Voltage Ratio Input (slider) — for example, turning the output on only once the ratio crosses some threshold — to see how an input channel and an output channel can be wired together.

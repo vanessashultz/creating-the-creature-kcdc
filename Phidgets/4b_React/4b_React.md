@@ -38,7 +38,7 @@ The vanilla JS examples never needed types. TypeScript does, but the
 `phidget22` package ships its own type declarations, so there's no need to
 hand-write ambient types the way an earlier pass of this example did with
 `app/phidget22.d.ts` — importing the package gives full, accurate types for
-`NetworkConnection`, `DigitalInput`, `VoltageRatioInput`, `VoltageOutput`,
+`NetworkConnection`, `DigitalInput`, `VoltageRatioInput`, `DigitalOutput`,
 and everything else in the SDK for free.
 
 ## Step 3 — Replace DOM lookups with React state and refs
@@ -49,7 +49,7 @@ Every `document.getElementById(...)` in the original files became either:
   connection status, button-pressed state, voltage ratio, output state, and
   the raw state panel's contents.
 - **A `useRef`**, for the live Phidget channel objects themselves
-  (`digitalInputRef`, `voltageRatioInputRef`, `voltageOutputRef`). These
+  (`digitalInputRef`, `voltageRatioInputRef`, `digitalOutputRef`). These
   need to persist across renders without *causing* a re-render when
   assigned, which is exactly what `useRef` is for — the same role the plain
   `let digitalInput = null;` variables played in the HTML versions.
@@ -80,8 +80,8 @@ channel's setup and cleanup the same way — nothing from the earlier
 channels' code changed to make room for the new one. It also carries over
 `example3.md`'s "one wire" limitation: `connectToPhidgetServer` in
 `example3.tsx` defines `openDigitalInput()`, `openVoltageRatioInput()`, and
-`openVoltageOutput()` as local helper functions, but only calls
-`openVoltageOutput()` — the other two calls are left in place, commented
+`openDigitalOutput()` as local helper functions, but only calls
+`openDigitalOutput()` — the other two calls are left in place, commented
 out, exactly like the commented-out calls in `example3.md`'s finished HTML
 file.
 

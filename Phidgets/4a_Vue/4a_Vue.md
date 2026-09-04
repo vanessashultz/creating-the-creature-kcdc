@@ -8,7 +8,7 @@ We're going to rebuild that same page's functionality as a real Vue project, sca
 
 Worth naming up front, since a project scaffold touches a lot of files at once:
 
-- **Unchanged:** the `phidget22.NetworkConnection`, `DigitalInput`, `VoltageRatioInput`, and `VoltageOutput` objects, their `isHubPortDevice`/`hubPort` setup, `open(5000)`, `close()`, `setEnabled()`. All of that is Phidget22 API, not DOM manipulation or project structure — it stays exactly as it was. That also includes the "one wire" limitation from `example3.md`: only the voltage output channel is opened by default, with the digital input and voltage ratio setup left in place but commented out.
+- **Unchanged:** the `phidget22.NetworkConnection`, `DigitalInput`, `VoltageRatioInput`, and `DigitalOutput` objects, their addressing setup (`isHubPortDevice`/`hubPort` for the first two, `hubPort`/`channel` for `DigitalOutput` — see `example3.md` for why they differ), `open(5000)`, `close()`, `setState()`. All of that is Phidget22 API, not DOM manipulation or project structure — it stays exactly as it was. That also includes the "one wire" limitation from `example3.md`: only the digital output channel is opened by default, with the digital input and voltage ratio setup left in place but commented out.
 - **Changed:** how the page's markup, state, and styling are organized (into a Vue *component*), and how the `phidget22` library gets into the page (an installed package instead of a CDN `<script>` tag).
 
 ## Step 1 — Scaffold the project
@@ -134,7 +134,7 @@ Start with the `<template>` section — this is the same markup you'd write in t
   </section>
 
   <section>
-    <h2>Voltage Output</h2>
+    <h2>Digital Output</h2>
     <button
       class="output-button"
       :class="outputOn ? 'on' : 'off'"
@@ -222,7 +222,7 @@ This idea doesn't change from the single-file version, but where you write it do
 let networkConnection = null
 let digitalInput = null
 let voltageRatioInput = null
-let voltageOutput = null
+let digitalOutput = null
 ```
 
 **Why still keep them out?** The reasoning is identical to the earlier guide: Vue's reactivity works by wrapping tracked values so it can notice reads and writes, and Phidget22's channel objects already have their own internal getters, setters, and behavior tied to specific property names like `.state` and `.onStateChange`. Wrapping one of those in Vue's reactivity system risks interfering with how the library expects to manage those properties, and there's no benefit to doing so — the template never displays a `DigitalInput` object directly, only the plain values (`buttonPressed`, `voltageRatio`, `outputOn`) that a channel's callback copies out on purpose.
@@ -258,12 +258,12 @@ async function connectToPhidgetServer(address, port) {
   await networkConnection.connect()
 
   // Like the plain-HTML version, we only have one wire for this demo, so
-  // only the voltage output channel is opened here. openDigitalInput() and
+  // only the digital output channel is opened here. openDigitalInput() and
   // openVoltageRatioInput() are left in place below — swap the call here
   // to try them instead.
   // await openDigitalInput()
   // await openVoltageRatioInput()
-  await openVoltageOutput()
+  await openDigitalOutput()
 
   connected.value = true
 }
@@ -342,33 +342,33 @@ async function openVoltageRatioInput() {
   await voltageRatioInput.open(5000)
 }
 
-async function openVoltageOutput() {
-  voltageOutput = new phidget22.VoltageOutput()
-  voltageOutput.isHubPortDevice = true
-  voltageOutput.hubPort = 0
+async function openDigitalOutput() {
+  digitalOutput = new phidget22.DigitalOutput()
+  digitalOutput.isHubPortDevice = false
+  digitalOutput.hubPort = 0
+  digitalOutput.channel = 0
 
-  voltageOutput.onAttach = () => {
+  digitalOutput.onAttach = () => {
     rawState.value = {
       status: 'Attached',
-      deviceName: voltageOutput.deviceName,
-      serialNumber: voltageOutput.deviceSerialNumber,
-      channel: voltageOutput.channel,
-      enabled: voltageOutput.enabled
+      deviceName: digitalOutput.deviceName,
+      serialNumber: digitalOutput.deviceSerialNumber,
+      channel: digitalOutput.channel,
+      state: digitalOutput.state
     }
-    outputOn.value = voltageOutput.enabled === true
+    outputOn.value = digitalOutput.state === true
   }
 
-  voltageOutput.onDetach = () => {
+  digitalOutput.onDetach = () => {
     rawState.value = { status: 'Device detached' }
     outputOn.value = false
   }
 
-  await voltageOutput.open(5000)
-  await voltageOutput.setVoltage(4) // Set the voltage as soon as the channel is open
+  await digitalOutput.open(5000)
 }
 
 async function disconnect() {
-  for (const channel of [digitalInput, voltageRatioInput, voltageOutput]) {
+  for (const channel of [digitalInput, voltageRatioInput, digitalOutput]) {
     if (channel) {
       try {
         await channel.close()
@@ -379,7 +379,7 @@ async function disconnect() {
   }
   digitalInput = null
   voltageRatioInput = null
-  voltageOutput = null
+  digitalOutput = null
 
   buttonPressed.value = false
   voltageRatio.value = null
@@ -389,25 +389,25 @@ async function disconnect() {
 }
 
 async function toggleOutput() {
-  if (!voltageOutput) {
+  if (!digitalOutput) {
     return
   }
 
-  const nextState = !voltageOutput.enabled
+  const nextState = !digitalOutput.state
 
   try {
-    await voltageOutput.setEnabled(nextState)
+    await digitalOutput.setState(nextState)
     outputOn.value = nextState
     rawState.value = {
       status: 'State change',
-      deviceName: voltageOutput.deviceName,
-      serialNumber: voltageOutput.deviceSerialNumber,
-      channel: voltageOutput.channel,
-      enabled: nextState,
+      deviceName: digitalOutput.deviceName,
+      serialNumber: digitalOutput.deviceSerialNumber,
+      channel: digitalOutput.channel,
+      state: nextState,
       timestamp: new Date().toISOString()
     }
   } catch (error) {
-    rawState.value = { setEnabledError: String(error) }
+    rawState.value = { setStateError: String(error) }
   }
 }
 ```
@@ -415,7 +415,7 @@ async function toggleOutput() {
 Read this next to `example3.md`'s finished version of `connectToPhidgetServer`, `disconnectFromPhidgetServer`, and the output button's click listener — the Phidget22 calls are line-for-line the same, including the "only one wire" limitation: `openDigitalInput()` and `openVoltageRatioInput()` are defined but their calls stay commented out, matching the commented-out calls in `example3.md`'s finished HTML file. The only real differences:
 
 - **Reactive assignments use `.value`.** `buttonPressed.value = digitalInput.state === true` is the Composition API's version of what the single-file guide wrote as `this.buttonPressed = digitalInput.state === true`.
-- **There's no `methods: {...}` wrapper.** `connect`, `connectToPhidgetServer`, `openDigitalInput`, `openVoltageRatioInput`, `openVoltageOutput`, `disconnect`, and `toggleOutput` are just top-level `async function` declarations, made available to the template automatically (Step 5).
+- **There's no `methods: {...}` wrapper.** `connect`, `connectToPhidgetServer`, `openDigitalInput`, `openVoltageRatioInput`, `openDigitalOutput`, `disconnect`, and `toggleOutput` are just top-level `async function` declarations, made available to the template automatically (Step 5).
 - **No `this` anywhere.** The Options API relied on arrow functions preserving `this` from the surrounding method; `<script setup>` functions and callbacks just close over the `ref`s directly, since there's no component instance object to refer to in the first place.
 
 ## Step 9 — Add the component-specific styles
@@ -595,7 +595,7 @@ This does what double-clicking `phidget-button.html` used to do — except inste
 
 ## Trying it yourself
 
-1. Make sure a Phidget Network Server is running and reachable, with a voltage output device (an LED) plugged into hub port 0 — the same single-wire setup `example3.md` ends on.
+1. Make sure a Phidget Network Server is running and reachable, with a digital output device (an LED) plugged into hub port 0 — the same single-wire setup `example3.md` ends on.
 2. With `npm run dev` running, open the app in a browser.
 3. Enter the server's address and port (default `localhost:8989`) and click Connect.
 4. Click the output button — the LED should switch on and off along with the page, behaving identically to the vanilla HTML version, but now built from a proper project structure: state and logic in `<script setup>`, markup in `<template>`, and styling scoped to the component in `<style scoped>`.

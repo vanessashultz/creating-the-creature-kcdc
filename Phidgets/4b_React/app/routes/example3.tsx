@@ -4,7 +4,7 @@ import type { Route } from "./+types/example3";
 import "../phidget-examples.css";
 
 export function meta({}: Route.MetaArgs) {
-  return [{ title: "Phidget Button + Voltage Ratio + Voltage Output" }];
+  return [{ title: "Phidget Button + Voltage Ratio + Digital Output" }];
 }
 
 export default function Example3() {
@@ -22,7 +22,7 @@ export default function Example3() {
   // The Phidget channel objects — kept in refs so re-renders don't recreate them
   const digitalInputRef = useRef<phidget22.DigitalInput | null>(null);
   const voltageRatioInputRef = useRef<phidget22.VoltageRatioInput | null>(null);
-  const voltageOutputRef = useRef<phidget22.VoltageOutput | null>(null);
+  const digitalOutputRef = useRef<phidget22.DigitalOutput | null>(null);
 
   function updateRawStatePanel(stateObject: unknown) {
     setRawState(stateObject);
@@ -43,12 +43,12 @@ export default function Example3() {
     await connection.connect();
 
     // Like the plain-HTML version, we only have one wire for this demo, so
-    // only the voltage output channel is opened here. openDigitalInput()
+    // only the digital output channel is opened here. openDigitalInput()
     // and openVoltageRatioInput() are left in place below — swap the call
     // here to try them instead.
     // await openDigitalInput();
     // await openVoltageRatioInput();
-    await openVoltageOutput();
+    await openDigitalOutput();
 
     setIsConnected(true);
 
@@ -132,31 +132,31 @@ export default function Example3() {
       await voltageRatioInput.open(5000);
     }
 
-    async function openVoltageOutput() {
-      const voltageOutput = new phidget22.VoltageOutput();
-      voltageOutputRef.current = voltageOutput;
+    async function openDigitalOutput() {
+      const digitalOutput = new phidget22.DigitalOutput();
+      digitalOutputRef.current = digitalOutput;
 
-      voltageOutput.isHubPortDevice = true;
-      voltageOutput.hubPort = 0;
+      digitalOutput.isHubPortDevice = false;
+      digitalOutput.hubPort = 0;
+      digitalOutput.channel = 0;
 
-      voltageOutput.onAttach = () => {
+      digitalOutput.onAttach = () => {
         updateRawStatePanel({
           status: "Attached",
-          deviceName: voltageOutput.deviceName,
-          serialNumber: voltageOutput.deviceSerialNumber,
-          channel: voltageOutput.channel,
-          enabled: voltageOutput.enabled,
+          deviceName: digitalOutput.deviceName,
+          serialNumber: digitalOutput.deviceSerialNumber,
+          channel: digitalOutput.channel,
+          state: digitalOutput.state,
         });
-        setIsOutputOn(voltageOutput.enabled === true);
+        setIsOutputOn(digitalOutput.state === true);
       };
 
-      voltageOutput.onDetach = () => {
+      digitalOutput.onDetach = () => {
         updateRawStatePanel({ status: "Device detached" });
         setIsOutputOn(false);
       };
 
-      await voltageOutput.open(5000);
-      await voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
+      await digitalOutput.open(5000);
     }
   }
 
@@ -177,13 +177,13 @@ export default function Example3() {
       }
       voltageRatioInputRef.current = null;
     }
-    if (voltageOutputRef.current) {
+    if (digitalOutputRef.current) {
       try {
-        await voltageOutputRef.current.close();
+        await digitalOutputRef.current.close();
       } catch (error) {
         // Channel may already be closed — nothing to do here.
       }
-      voltageOutputRef.current = null;
+      digitalOutputRef.current = null;
     }
     setIsButtonPressed(false);
     setVoltageRatio(null);
@@ -206,28 +206,28 @@ export default function Example3() {
     }
   }
 
-  // Toggle the voltage output each time the button is pressed
+  // Toggle the digital output each time the button is pressed
   async function handleOutputButtonClick() {
-    const voltageOutput = voltageOutputRef.current;
-    if (!voltageOutput) {
+    const digitalOutput = digitalOutputRef.current;
+    if (!digitalOutput) {
       return;
     }
 
-    const nextState = !voltageOutput.enabled;
+    const nextState = !digitalOutput.state;
 
     try {
-      await voltageOutput.setEnabled(nextState);
+      await digitalOutput.setState(nextState);
       setIsOutputOn(nextState);
       updateRawStatePanel({
         status: "State change",
-        deviceName: voltageOutput.deviceName,
-        serialNumber: voltageOutput.deviceSerialNumber,
-        channel: voltageOutput.channel,
-        enabled: nextState,
+        deviceName: digitalOutput.deviceName,
+        serialNumber: digitalOutput.deviceSerialNumber,
+        channel: digitalOutput.channel,
+        state: nextState,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      updateRawStatePanel({ setEnabledError: String(error) });
+      updateRawStatePanel({ setStateError: String(error) });
     }
   }
 
@@ -236,7 +236,7 @@ export default function Example3() {
 
   return (
     <div className="phidget-page">
-      <h1>Phidget Button + Voltage Ratio + Voltage Output</h1>
+      <h1>Phidget Button + Voltage Ratio + Digital Output</h1>
 
       <section>
         <form className="connection-form" onSubmit={handleConnectSubmit}>
@@ -291,7 +291,7 @@ export default function Example3() {
       </section>
 
       <section>
-        <h2>Voltage Output</h2>
+        <h2>Digital Output</h2>
         <button
           id="outputButton"
           type="button"
