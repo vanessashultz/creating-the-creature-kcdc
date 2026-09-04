@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phidget Button Monitor</title>
+  <script src="https://unpkg.com/phidget22/browser/phidget22.js"></script>
+  <style>
+    body {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 16px;
+      background: #f5f5f5;
+      color: #1a1a1a;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    /* Connection form */
+    #connectionForm {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    #connectionForm input {
+      padding: 6px 8px;
+      font-size: 1rem;
+    }
+
+    #connectionForm button {
+      padding: 6px 14px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #statusLine {
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+    }
+
+    #statusLine .connected {
+      color: #1a7f37;
+      font-weight: bold;
+    }
+
+    #statusLine .disconnected {
+      color: #b42318;
+      font-weight: bold;
+    }
+
+    /* Button visual */
+    #buttonVisual {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      margin: 32px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      background: #8a8f98;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.1s ease;
+      user-select: none;
+    }
+
+    #buttonVisual.pressed {
+      background: #d3322b;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) inset;
+    }
+
+    #buttonVisual.neutral {
+      background: #3a9d4f;
+    }
+
+    /* Voltage ratio visual */
+    #ratioVisual {
+      margin: 32px auto;
+      max-width: 480px;
+    }
+
+    #ratioValue {
+      font-size: 2.4rem;
+      font-weight: bold;
+      text-align: center;
+      font-family: "Courier New", monospace;
+    }
+
+    #ratioBarTrack {
+      width: 100%;
+      height: 24px;
+      background: #d9dce1;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    #ratioBarFill {
+      height: 100%;
+      width: 0%;
+      background: #3a9d4f;
+      transition: width 0.1s ease;
+    }
+
+    /* Output control button */
+    #outputButton {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      margin: 32px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      background: #8a8f98;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.1s ease, transform 0.1s ease;
+      user-select: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    #outputButton:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    #outputButton.on {
+      background: #3a9d4f;
+    }
+
+    #outputButton.off {
+      background: #8a8f98;
+    }
+
+    /* Raw state panel */
+    #rawStatePanel {
+      background: #10131a;
+      color: #b6ffb6;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: "Courier New", monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    section {
+      margin-bottom: 28px;
+    }
+
+    label {
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Phidget Button Monitor</h1>
+
+  <!-- The connection form -->
+  <section>
+    <form id="connectionForm">
+      <label>
+        Server address
+        <input id="serverAddress" type="text" value="localhost" />
+      </label>
+      <label>
+        Port
+        <input id="serverPort" type="number" value="8989" style="width: 80px;" />
+      </label>
+      <button id="connectButton" type="submit">Connect</button>
+      <button id="disconnectButton" type="button" disabled>Disconnect</button>
+    </form>
+    <div id="statusLine">
+      Status: <span id="statusText" class="disconnected">Disconnected</span>
+    </div>
+  </section>
+
+  <!-- The button visual -->
+  <section>
+    <h2>Button State</h2>
+    <div id="buttonVisual" class="neutral">NEUTRAL</div>
+  </section>
+
+  <!-- The voltage ratio visual -->
+  <section>
+    <h2>Voltage Ratio</h2>
+    <div id="ratioVisual">
+      <div id="ratioValue">--</div>
+      <div id="ratioBarTrack">
+        <div id="ratioBarFill"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The voltage output visual-->
+  <section>
+    <h2>Voltage Output</h2>
+    <button id="outputButton" class="off" type="button" disabled>OFF</button>
+  </section>
+
+  <!-- The raw state panel -->
+  <section>
+    <h2>Raw Phidget State</h2>
+    <div id="rawStatePanel">Waiting for connection...</div>
+  </section>
+
+  <script>
+    const connectionForm = document.getElementById("connectionForm");
+    const serverAddressInput = document.getElementById("serverAddress");
+    const serverPortInput = document.getElementById("serverPort");
+    const connectButton = document.getElementById("connectButton");
+    const disconnectButton = document.getElementById("disconnectButton");
+    const statusText = document.getElementById("statusText");
+    const buttonVisual = document.getElementById("buttonVisual");
+    const rawStatePanel = document.getElementById("rawStatePanel");
+    const ratioValue = document.getElementById("ratioValue");
+    const ratioBarFill = document.getElementById("ratioBarFill");
+    const outputButton = document.getElementById("outputButton");
+
+    let connection;
+    let digitalInput;
+    let voltageRatioInput;
+    let voltageOutput;
+
+    /// ---------------------
+    /// Helper functions
+    /// ---------------------
+
+    function updateRawStatePanel(stateObject) {
+      rawStatePanel.textContent = JSON.stringify(stateObject, null, 2);
+    }
+
+    function setConnectedUI(isConnected) {
+      statusText.textContent = isConnected ? 'Connected' : "Disconnected";
+      statusText.className = isConnected ? "connected" : "disconnected";
+      connectButton.disabled = isConnected;
+      disconnectButton.disabled = !isConnected;
+      serverAddressInput.disabled = isConnected;
+      serverPortInput.disabled = isConnected;
+      outputButton.disabled = !isConnected;
+    }
+
+    function setButtonVisual(isPressed) {
+      buttonVisual.classList.toggle("pressed", isPressed);
+      buttonVisual.classList.toggle("neutral", !isPressed);
+      buttonVisual.textContent = isPressed ? "PRESSED" : "NEUTRAL";
+    }
+
+    function setRatioVisual(ratio) {
+      if (ratio == null) {
+        ratioValue.textContent = "--";
+        ratioValue.style.width = "0%";
+      }
+      else {
+        ratioValue.textContent = ratio.toFixed(4);
+        ratioBarFill.style.width = `${ratio * 100}%`;
+      }
+    }
+
+    function setOutputButtonVisual(isOn) {
+      outputButton.classList.toggle("on", isOn);
+      outputButton.classList.toggle("off", !isOn);
+      outputButton.textContent = isOn ? "ON" : "OFF";
+    }
+
+    /// ---------------------
+    /// Phidget Controls
+    /// ---------------------
+
+    async function connectToPhidgetServer(address, port) {
+      connection = new phidget22.NetworkConnection({
+        hostname: address,
+        port: port,
+        onError: (code, message) => updateRawStatePanel({ status: "Error", connectionError: { code, message }}),
+        onConnect: () => updateRawStatePanel({ status: "Connected" }),
+        onDisconnect: () => {
+          setConnectedUI(false);
+          updateRawStatePanel({ status: "Disconnected from server" });
+        }
+      });
+
+      await connection.connect();
+
+      //await openDigitalInput();
+      //await openVoltageRatioInput();
+      await openVoltageOutput();
+
+      setConnectedUI(true);
+    }
+
+    async function openDigitalInput() {
+      digitalInput = new phidget22.DigitalInput();
+
+      digitalInput.isHubPortDevice = true;
+      digitalInput.hubPort = 0;
+
+      digitalInput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state: digitalInput.state,
+          timestamp: new Date().toISOString()
+        });
+        setButtonVisual(digitalInput.state === true);
+      }
+
+      digitalInput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setButtonVisual(false);
+      }
+
+      digitalInput.onStateChange = (state) => {
+        updateRawStatePanel({
+          status: "State change",
+          deviceName: digitalInput.deviceName,
+          serialNumber: digitalInput.deviceSerialNumber,
+          channel: digitalInput.channel,
+          state: state,
+          timestamp: new Date().toISOString()
+        });
+        setButtonVisual(!state);
+      }
+
+      await digitalInput.open(5000);
+    }
+
+    async function openVoltageRatioInput() {
+      voltageRatioInput = new phidget22.VoltageRatioInput();
+
+      voltageRatioInput.isHubPortDevice = true;
+      voltageRatioInput.hubPort = 0;
+
+      voltageRatioInput.onAttach = () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: voltageRatioInput.deviceName,
+          serialNumber: voltageRatioInput.deviceSerialNumber,
+          channel: voltageRatioInput.channel,
+          voltageRatio: voltageRatioInput.voltageRatio
+        });
+        setRatioVisual(voltageRatioInput.voltageRatio);
+      };
+
+      voltageRatioInput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setRatioVisual(null);
+      };
+
+      voltageRatioInput.onVoltageRatioChange = (voltageRatio) => {
+        setRatioVisual(voltageRatio);
+        updateRawStatePanel({
+          status: "Voltage ratio change",
+          deviceName: voltageRatioInput.deviceName,
+          serialNumber: voltageRatioInput.deviceSerialNumber,
+          channel: voltageRatioInput.channel,
+          voltageRatio: voltageRatio,
+          timestamp: new Date().toISOString()
+        });
+      };
+
+      await voltageRatioInput.open(5000);
+    }
+
+    async function openVoltageOutput() {
+      voltageOutput = new phidget22.VoltageOutput();
+
+      voltageOutput.isHubPortDevice = true;
+      voltageOutput.hubPort = 0;
+
+      voltageOutput.onAttach = async () => {
+        updateRawStatePanel({
+          status: "Attached",
+          deviceName: voltageOutput.deviceName,
+          serialNumber: voltageOutput.deviceSerialNumber,
+          channel: voltageOutput.channel,
+          enabled: voltageOutput.enabled,
+        });
+        setOutputButtonVisual(voltageOutput.enabled === true);
+      };
+
+      voltageOutput.onDetach = () => {
+        updateRawStatePanel({ status: "Device detached" });
+        setOutputButtonVisual(false);
+      }
+
+      await voltageOutput.open(5000);
+      await voltageOutput.setVoltage(4); // Set the voltage as soon as the channel is open
+    }
+
+    async function disconnectFromPhidgetServer() {
+      if (digitalInput) {
+        try {
+          await digitalInput.close();
+        }
+        catch (error) {
+          console.warn(error);
+          // Channel may already be closed — nothing to do here.
+        }
+        digitalInput = null;
+      }
+
+      if (voltageRatioInput) {
+        try {
+          await voltageRatioInput.close();
+        } catch (error) {
+          console.warn(error);
+          // Channel may already be closed — nothing to do here.
+        }
+        voltageRatioInput = null;
+      }
+
+      if (voltageOutput) {
+        try {
+          await voltageOutput.close();
+        } catch (error) {
+          console.warn(error);
+          // Channel may already be closed - nothing to do here.
+        }
+        voltageOutput = null;
+      }
+
+      setButtonVisual(false);
+      setRatioVisual(null);
+      setOutputButtonVisual(false);
+      setConnectedUI(false);
+      updateRawStatePanel({ status: "Disconnected" });
+    }
+
+    /// ---------------------
+    /// Event Listeners
+    /// ---------------------
+
+    connectionForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const address = serverAddressInput.value.trim();
+      const port = parseInt(serverPortInput.value, 10);
+
+      try {
+        updateRawStatePanel({ status: "Connecting..." });
+        await connectToPhidgetServer(address, port);
+      }
+      catch (error) {
+        console.error(error);
+
+        updateRawStatePanel({ connectionError: String(error) });
+        setConnectedUI(false);
+      }
+    });
+
+    disconnectButton.addEventListener("click", disconnectFromPhidgetServer);
+
+    outputButton.addEventListener("click", async () => {
+      if (!voltageOutput) {
+        return;
+      }
+
+      const nextState = !voltageOutput.enabled;
+
+      try {
+        await voltageOutput.setEnabled(nextState);
+        setOutputButtonVisual(nextState);
+        updateRawStatePanel({
+          status: "State change",
+          deviceName: digitalOutput.deviceName,
+          serialNumber: digitalOutput.deviceSerialNumber,
+          channel: digitalOutput.channel,
+          enabled: nextState,
+          timestamp: new Date().toISOString()
+        });
+      }
+      catch (error) {
+        updateRawStatePanel({ status: "Error", setEnabledError: String(error) });
+      }
+    });
+  </script>
+</body>
+</html>

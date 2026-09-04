@@ -1,6 +1,6 @@
-# Adding a Voltage Ratio Reading — Extending `phidget-button.html`
+# Adding a Voltage Ratio Reading
 
-This guide assumes you've been through [`example1.md`](example1.md) and have a working file that changes a circle when a digital input button is pressed.
+This guide assumes you've been through [`1_DigitalInput.md`](1_DigitalInput.md) and have a working file that changes a circle when a digital input button is pressed.
 
 We're going to swap out our DigitalInput channel for a **VoltageRatio** channel - a continuous value roughly between 0 and 1, which is what Phidget's analog sensors, like the slider, report.
 
