@@ -76,6 +76,9 @@ Connect the microUSB cable to your laptop. You may need to "allow" this accessor
 You should see a green power LED come on. Other orange LED lights (solid or blinking) are also normal.
 ![alt text](images/blinking_green_light.png)
 
+You may also see a popup that requests that you "allow this accessory". Select "allow".
+![alt text](<Screenshot 2026-09-04 at 1.22.03 PM.png>)
+
 ---
 
 ## 4. Select the board
@@ -99,29 +102,29 @@ That's it. The IDE is ready!
 
 ## 5. Setting up Ground Rail
 
+> If you are attending the KCDC workhop, this has already been done for you.
+
 Multiple components need to share a common ground connection. The blue rails on each side of the breadboard are designed for this as they run the full length of the board so anything can tap into them.
 
 > Note: the left and right rails are usually **not connected to each other**. If you have components on both sides, each side needs its own ground jumper. This workshop will have inputs on the left and outputs on the right, so we will need to do this for both sides.
 
-1. Find a small male-to-male jumper wire with in a baggie labeled **"GND"**
+1. Plug one of a male-to-male jumper wire into into **row 14** on the breadboard (Notice that the connecting "row" on the Arduino Nano has a white circle around it that helps identify your ground)
 
-2. Plug one end into **row 14** on the breadboard (Notice that the connecting "row" on the Arduino Nano has a white circle around it that helps identify your ground)
+2. Plug the other end into any pin on the **left blue rail** (I would suggest you choose pins at the bottom of the breadboard in order to have enough space for our connections up top)
 
-3. Plug the other end into any pin on the **left blue rail** (I would suggest you choose pins at the bottom of the breadboard in order to have enough space for our connections up top)
-
-4. Repeat with a second jumper: one end into row 14 (or any row already connected to it), the other end into any pin on the **right blue rail**
+3. Repeat with a second jumper: one end into row 14 (or any row already connected to it), the other end into any pin on the **right blue rail**
 
 > Each blue rail is a ground rail. Once connected, any component near that rail can tap into it instead of running its own wire all the way back to the Arduino.
 
 ## 6. Setting up Power Rail
 
+> If you are attending the KCDC workhop, this has already been done for you.
+
 Just like ground, components need to share a power connection. The red rail on the side of the breadboard works the same way as the blue rail, but for power.
 
-1. Find a small male-to-male jumper wire with in a baggie labeled **"5V"**
+1. Plug one end of a male-to-male jumper wire into **row 12** on the breadboard (12a, 12b, or 12c). *Remember that the entire row of **row 12** is connected to the 5V pin.*
 
-2. Plug one end into **row 12** on the breadboard (12a or 12b)
-
-3. Plug the other end into any pin on the **red rail** (the long strip running alongside the blue rail)
+2. Plug the other end of the jumper wire into any pin on the **red rail** (the long strip running alongside the blue rail)
 
 ---
 
