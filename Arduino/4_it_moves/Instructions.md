@@ -2,14 +2,16 @@
 
 Now that the creature can see, let's give it the ability to move! We'll use a potentiometer (a dial) to control how fast a servo motor sweeps back and forth — turning the knob speeds up or slows down the sweep.
 
+Find the baggie labeled **"4_it_moves"** and use the components inside for this section.
+
 ## Step 1: Wiring the Servo and Potentiometer
 
-**Unplug the Nano before changing the breadboard.**
+**Unplug the Nano from your computer before starting.**
 
 ### Components
 
-- One servo motor (in a baggie labeled **"SERVO"**)
-- One potentiometer (in a baggie labeled **"POT"**)
+- One servo motor
+- One potentiometer
 - Jumper wires
 
 ### Wiring
@@ -130,3 +132,12 @@ void loop() {
   delay(stepDelay);     // wait before the next step (controls speed)
 }
 ```
+
+## Cleanup
+
+Before moving on to the next section:
+
+1. **Unplug the Nano from your computer**
+2. Remove the servo, potentiometer, and all jumper wires **except** the red and brown wires that connect to 5V and GND
+3. Leave the Nano plugged into the breadboard
+4. Put everything you removed back into the baggie labeled **"4_it_moves"**
