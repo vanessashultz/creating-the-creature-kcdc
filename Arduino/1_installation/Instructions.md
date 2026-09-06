@@ -68,7 +68,19 @@ This is the step people skip. Nothing works without it.
 
 > You do **not** need "Arduino AVR Boards." That's a different core for a different board.
 
-## 3. Connect the Board to Laptop
+## 3. Install the DFPlayer library
+
+The final section uses an MP3 player module that needs an extra library. Install it now, while you have decent wifi.
+
+1. Go to **Tools > Manage Libraries**, or click the **books icon** in the left sidebar
+2. Search for `DFRobotDFPlayerMini`
+3. Install the one by **DFRobot**
+
+> There are several similarly named libraries by other authors, such as "DFPlayer Mini Mp3 by Makuna" and "DFPlayerMini_Fast." They have different commands and will not work with our code. Make sure the author says **DFRobot**.
+
+Everything else we use is built into the IDE already, so this is the only library you need.
+
+## 4. Connect the Board to Laptop
 Connect the microUSB cable to your laptop. You may need to "allow" this accessory to be connected.
 
 **Must be a data transfer cable.** Many cables are charge-only and carry no data. They look identical to good ones. If you're having issues with your laptop recognizing the board, this is the most likely reason.
@@ -81,7 +93,7 @@ You may also see a popup that requests that you "allow this accessory". Select "
 
 ---
 
-## 4. Select the board
+## 5. Select the board
 
 Open the dropdown at the top of the IDE window (it says "Select Board").
 
@@ -100,7 +112,7 @@ Click it.
 
 That's it. The IDE is ready!
 
-## 5. Setting up Ground Rail
+## 6. Setting up Ground Rail
 
 > If you are attending the KCDC workhop, this has already been done for you.
 
@@ -116,7 +128,7 @@ Multiple components need to share a common ground connection. The blue rails on 
 
 > Each blue rail is a ground rail. Once connected, any component near that rail can tap into it instead of running its own wire all the way back to the Arduino.
 
-## 6. Setting up Power Rail
+## 7. Setting up Power Rail
 
 > If you are attending the KCDC workhop, this has already been done for you.
 
