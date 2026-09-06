@@ -1,6 +1,6 @@
-# First Test: Blink Rate
+# It Has a Pulse
 
-Blink is the "hello world" of Arduino. It's worth uploading to any new board first, since a successful upload confirms the whole chain is working before you write anything real.
+The Blink sketch is the "hello world" of Arduino. A steady blink is proof of life. It means the board is alive and responding. Think of it as giving your creature a pulse.
 
 ## Main Test
 *Arduino IDE has quite a few "built in" sketches that you can quickly run without changing the code.*
