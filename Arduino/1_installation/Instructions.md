@@ -8,7 +8,7 @@ If you get stuck, skip to [Troubleshooting](#troubleshooting) at the bottom, or 
 
 - A computer running Windows, macOS, or Linux
 - The Arduino Nano Every board
-- The a microUSB cable and any adapters needed to connect to your laptop
+- A microUSB cable and any adapters needed to connect to your laptop
 
 ## 1. Install and Open the Arduino IDE
 
@@ -114,13 +114,13 @@ That's it. The IDE is ready!
 
 ## 6. Setting up Ground Rail
 
-> If you are attending the KCDC workhop, this has already been done for you.
+> If you are attending the KCDC workshop, this has already been done for you.
 
 Multiple components need to share a common ground connection. The blue rails on each side of the breadboard are designed for this as they run the full length of the board so anything can tap into them.
 
 > Note: the left and right rails are usually **not connected to each other**. If you have components on both sides, each side needs its own ground jumper. This workshop will have inputs on the left and outputs on the right, so we will need to do this for both sides.
 
-1. Plug one of a male-to-male jumper wire into into **row 14** on the breadboard (Notice that the connecting "row" on the Arduino Nano has a white circle around it that helps identify your ground)
+1. Plug one end of a male-to-male jumper wire into **row 14** on the breadboard (Notice that the connecting "row" on the Arduino Nano has a white circle around it that helps identify your ground)
 
 2. Plug the other end into any pin on the **left blue rail** (I would suggest you choose pins at the bottom of the breadboard in order to have enough space for our connections up top)
 
@@ -130,7 +130,7 @@ Multiple components need to share a common ground connection. The blue rails on 
 
 ## 7. Setting up Power Rail
 
-> If you are attending the KCDC workhop, this has already been done for you.
+> If you are attending the KCDC workshop, this has already been done for you.
 
 Just like ground, components need to share a power connection. The red rail on the side of the breadboard works the same way as the blue rail, but for power.
 
@@ -138,6 +138,6 @@ Just like ground, components need to share a power connection. The red rail on t
 
 2. Plug the other end of the jumper wire into any pin on the **red rail** (the long strip running alongside the blue rail)
 
----
-
 > Having issues? See the [Troubleshooting guide](Troubleshooting.md).
+
+Head to the next section: [It Has a Pulse](../2_it_has_a_pulse/Instructions.md)

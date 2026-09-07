@@ -4,7 +4,7 @@ Time to give the creature a voice. We'll wire up an MP3 player, a speaker, and a
 
 There's a reason this one is last. It uses more components and draws more power than anything we've built so far, and every part has to cooperate at once. When something in a circuit this size misbehaves, staring at the wires doesn't help much. So we're also going to use the Arduino's built-in logging system, called the **Serial Monitor**, to see what the board is actually thinking.
 
-Fair warning: your creature will either refuse to say a word, or refuse to shut up. There is very little middle ground. Welcome to TRUE hardware hookups and be ready to regret bringing this creature to life! 😈
+Fair warning: your creature will either refuse to say a word, or refuse to shut up. Welcome to TRUE hardware hookups and be ready to regret bringing this creature to life! 😈 Be prepared to be frustrated and that's okay!!
 
 Find the baggie labeled **"5_it_speaks"** and use the components inside for this section.
 
@@ -14,18 +14,14 @@ Find the baggie labeled **"5_it_speaks"** and use the components inside for this
 
 Up to now, a tiny red jumper wire has carried 5V from the Nano to the top of the red power rail, and it's been fine. It *probably* won't be fine anymore.
 
-The MP3 player is the hungriest thing we've built. It doesn't sip power steadily like an LED, it grabs a chunk every time it starts a sound. Power has to travel from the Nano, up into the rail, and all the way down the board to reach it, and every spring contact along that path adds a tiny bit of resistance. Individually they're nothing. Added up, with the MP3 player yanking on the other end, the voltage sags just enough to make it misbehave.
+The MP3 player is the hungriest thing we've built, though the servo in the last section may come in a close second. It doesn't sip power steadily like an LED, it grabs a chunk every time it starts a sound. Power has to travel from the Nano, up into the rail, and all the way down the board to reach it, and every spring contact along that path adds a tiny bit of resistance. Individually they're nothing. Added up, with the MP3 player yanking on the other end, the voltage sags just enough to make it misbehave.
 
 The fix is to stop making the power travel so far. We'll feed the rail down near where the new components actually live.
 
 > If your station starts acting strange later in this section, this is the first thing to suspect. Move around the 5V wires to different holes in the rail and see if it settles down.
 
-1. Pull out the tiny red jumper wire connecting the Nano's 5V to the red rail
-2. Put it back in the baggie, you're done with it
-3. Take out one of the small **male-to-male jumper wires** (you should have a total of 4 small male-to-male jumper wires for this section)
-4. Put one end in **12c** (the Nano's 5V pin) and the other in the **red rail down near row 24**
-
-Now the power arrives right where it's needed, instead of at the far end of a long trip. You'll thank yourself later for this.
+1. "Roll" the tiny red jumper wire connecting the Nano's 5V to the red rail down so that we can access the 12a and 12b pins
+2. If rolling doesn't work, feel free to remove the red wire and put it back in the baggie because we won't be using it anymore
 
 ## Step 2: Place the MP3 player
 
@@ -33,19 +29,20 @@ The MP3 player is a small board called a **DFPlayer Mini**. It reads audio files
 
 1. Find the DFPlayer Mini in your baggie
 2. Place it so the **microSD card slot faces the bottom** of the breadboard
-3. Seat it with the **bottom-left pin in 30c**, straddling the center channel. You may have to gently press the pins on the DFPlayer Mini together to get it in. If you're struggling with it, ask Nessa to help
+3. Seat it with the **bottom-left pin in 30c**, straddling the center channel. You may have to gently press the pins on the DFPlayer Mini together to get it in. If you're struggling with getting it pushed iny, ask Nessa to help
+4. Take the **tiny brown jumper wire** and connect **29a** to the **blue (-) ground rail**. This gives the DFPlayer a shared ground with the Nano.
 
 The microSD card is already loaded with your creature's voice and inserted in the slot. Leave it alone.
 
+![DFPlayer placement](images/DFPlayer_placement.png)
+
 > Want your creature to say something of your own later? See [Loading Your Own Audio](Loading_Your_Own_Audio.md) for how to format a card, convert your files, and get them on there. There are a few traps in that process, and they're all written down.
 
-Now give it a ground connection:
+Now connect the DFPlayer Mini with the Arduino:
 
-4. Take the **tiny brown jumper wire** (this one looks exactly like the brown jumper wire that's going from the Arduino Nano's GND pin to the blue ground rail) and connect **29a** to the **blue (–) rail**
-
-That hole lines up with the DFPlayer's GND pin. Every component in a circuit needs a shared ground, a common zero point that all the other voltages get measured against. Without it, the Nano and the DFPlayer have no agreement about what "zero volts" even means, and nothing works.
-
-![GND wire and DFPlayer Mini placement](images/change_gnd_and_dfplayer_mini.png)
+5. Take out the group of three **male-to-male jumper wires** (you should have a group of 3 and a group of 2 male-to-male jumper wires)
+6. Keeping the group of three together without breaking them apart, take the Black wire and put one end into 12b and the other in 23c. This is sending the 5V current to the DFPlayer.
+7. Put the grey wire into 14j or 14i and the other end into 25c.
 
 ## Step 3: Let the Nano talk to the MP3 player
 
@@ -53,18 +50,17 @@ The Nano and the DFPlayer are going to have a conversation, so they each need a 
 
 ### Components
 
-- Two male-to-male jumper wires
-- One resistor with **brown, black, and red** bands (1kΩ)
-- One more jumper wire for power
+- One blue resistor with **brown, black, and red** bands (1kΩ)
+- One male-to-male jumper wire (the **white** wire from the group of three)
 
 ### Wiring
 
-**Keep the Nano unplugged.**
+**Unplug the Nano if it isn't already.**
 
-1. Run a male-to-male jumper from **24c** to any hole in **row 20 on the right side (f–j)**
-2. Put one leg of the **brown-black-red resistor** in another hole in **row 20 (f–j)**, and the other leg in **row 15, i or j**
-3. Run a jumper wire from **14, i or j** to **25c**
-4. Run a jumper wire from **23c** to the **red rail near row 27**
+1. Put one leg of the **brown-black-red resistor** in **row 20 (f-j)**, and the other leg in **row 15, i or j**
+2. Run the **white** wire from **row 20 (f-j)** to **24c**
+
+![DFPlayer hookup](images/DFPlayer_hookup.png)
 
 ### Why the resistor?
 
@@ -74,7 +70,7 @@ The resistor sits in the middle of that one wire and limits how much current can
 
 ### Code changes
 
-5. First, install the library. Go to **Tools > Manage Libraries**, search for `DFRobotDFPlayerMini`, and install the one by **DFRobot**. There are similarly named libraries by other authors that will not work.
+5. If you didn't install the DFPlayer library during setup, do it now: go to **Tools > Manage Libraries**, search for `DFRobotDFPlayerMini`, and install the one by **DFRobot**. There are similarly named libraries by other authors that will not work.
 
 6. Open a new sketch: **File > New Sketch**
 
@@ -123,21 +119,25 @@ If the light never comes on, check that your D0 and D1 wires aren't swapped. Tal
 
 ## Step 4: Add the speaker
 
-Now let's give your creature a voicebox (because surely we won't regret it...). You're going to hear your creature's first sounds or words into this world!
+Now let's give your creature a voicebox (because surely we won't regret it...). You're going to hear your creature's first words into this world!
 
 The speaker in your baggie is a **3 watt, 8 ohm** mini speaker. Those two numbers are worth knowing what to look for when you buy your own later. **Watts** is how much power it can handle before it complains. **Ohms** is its impedance, roughly how hard it is for the amplifier to push. Lower ohms means the amp has to work harder and pull more current.
 
-1. Find the speaker in your baggie as we will now connect it to the DFPlayer Mini. The male-to-male jumper wires should be already attached to its two leads
-2. Put one lead in **28c**
+1. Find the speaker in your baggie as we will now connect it to the DFPlayer Mini. Attach the group of 2 male-to-male jumper into the two female speaker connectors
+2. On the other end, put one lead in **28c**
 3. Put the other lead in **30c**
 
-It genuinely doesn't matter which lead goes where. A speaker works the same either way round.
+It genuinely doesn't matter which lead goes where in terms of if the blue or purple goes into which lead. A speaker works the same either way round.
 
-Your creature should now be talking every three seconds. If the blue light blinks but you hear nothing, double-check that neither speaker wire slipped into **29**, which is ground.
+Your creature should now be talking every five seconds. If the blue light blinks but you hear nothing, double-check that neither speaker wire slipped into **29**, which is ground.
+
+![Speaker hookup](images/speaker_hookup.png)
 
 ## Step 5: Give it something to react to
 
 Right now your creature is a very enthusiastic parrot. Let's make it respond to people (or cats that whack your creature, which they will be prone to do) instead.
+
+> Fair warning: this sensor is the fussiest part of the workshop. It's sensitive to wiring, lighting, and placement, and we're not controlling any of those. If you can't get it to work reliably, that's okay! But let's see what we can do.
 
 ### What this thing is
 
@@ -151,7 +151,7 @@ What makes it interesting as an input is that it gives you a **number that chang
 
 1. Find the ultrasonic rangefinder in your baggie. It looks like a tiny speaker with a board behind it with 5 tentacles (aka, wires) coming out of it. Note that these are not like our jumper wires, so you may need to twist the exposed wire to make it easier to push into the breadboard.
 2. **Black wire** → the **blue (–) ground rail**
-3. **Red wire** (second from the right on the sensor) → the **red (+) rail near row 20**
+3. **Red wire** (second from the right on the sensor) → 12a
 4. **Blue wire** → **4c**
 
 Row 4 is the Nano's **A0** pin, the same analog input the potentiometer used in *It Moves*.
@@ -209,7 +209,7 @@ void setup() {
 }
 ```
 
-The creature now greets you the moment it powers up, before anyone has come near it. Setting `creatureAwake` to `true` right after tells it that it has already spoken, so it won't immediately say the same thing again to whoever happens to be standing there. It waits until they back away and come back (though I find your hand moving above the sensor is a fairly reliable way to trigger it).
+The creature now greets you the moment it powers up, before anyone has come near it. This is useful to make sure the DFPlayer and speaker are working, even if the ultrasonic rangefinder isn't. Setting `creatureAwake` to `true` right after tells it that it has already spoken, so it won't immediately say the same thing again to whoever happens to be standing there. It waits until they back away and come back (though I find placing your hand moving above the sensor is a fairly reliable way to trigger it).
 
 `Serial` and `Serial1` are two different channels. `Serial1` talks to the DFPlayer over D0 and D1. `Serial` talks to **your computer** over the USB cable, and that's the one whose messages you can read.
 
@@ -316,6 +316,20 @@ void loop() {
   delay(50);
 }
 ```
+
+## Stuck? Try the debugger
+
+There's an optional sketch in this section's `code_example/` folder called **`debugger.ino`**. It does the same thing as the code above, but it also reports whether the MP3 player answered, then streams the distance readings so you can pick your own threshold numbers.
+
+You can't see inside a running Arduino, so when something misbehaves it's hard to tell whether your wiring is wrong, your code is wrong, or a component is dead. The debugger makes the board tell you what it's seeing.
+
+1. Open `debugger.ino` and copy + paste its contents into a new sketch
+2. Upload it
+3. Go to **Tools > Serial Monitor**
+
+> **Close the Serial Monitor before you upload again.** It holds the connection to the board, and uploading needs that same connection. They can't both have it, so an upload with the monitor open may hang or fail.
+
+The bottom of `debugger.ino` lists what common symptoms usually mean.
 
 ## Cleanup
 
