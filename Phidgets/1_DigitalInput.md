@@ -2,7 +2,7 @@
 
 Phidgets are a great, simple, way to connect your digital application to the real world. The phidgets SDK offers a straightforward approach to connecting, monitoring, and adjusting a variety of sensors.
 
-These guides will walk you through creating a single html file that connects to a Phidget server, monitors a Touch Sensor, monitors a Sliders, and finally controls an LED in response to user input. This guide will focus on the first of those, connecting to a Phidget server and monitoring a Touch Sensor.
+These guides will walk you through creating a single html file that connects to a Phidget server, monitors a Touch Sensor, monitors a Slider, and finally controls an LED in response to user input. This guide will focus on the first of those, connecting to a Phidget server and monitoring a Touch Sensor.
 
 ## What we're building
 
@@ -10,7 +10,7 @@ A single HTML file, opened directly in a browser, that:
 1. Connects to a Phidget Network Server over the network.
 2. Listens to a digital input (a touch sensor) plugged into a Phidget hub.
 3. Shows a raw JSON dump of whatever the Phidget library is telling us, for debugging.
-4. Shows a icons that flips as you press the button.
+4. Shows a button that changes color as you press the button.
 
 Everything lives in one `.html` file — no build tools, no `npm install`, no server needed on your end. You just double-click the file (or serve it) and it runs.
 
@@ -21,7 +21,7 @@ Everything lives in one `.html` file — no build tools, no `npm install`, no se
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Phidget Button Monitor</title>
+  <title>Phidget Monitor</title>
   <script src="https://unpkg.com/phidget22/browser/phidget22.js"></script>
 </head>
 </html>
@@ -39,8 +39,7 @@ Next we'll start building out our web page. The body has three sections:
 
 ```html
 <body>
-  <body>
-  <h1>Phidget Button Monitor</h1>
+  <h1>Phidget Monitor</h1>
 
   <!-- The connection form -->
   <section>
@@ -150,6 +149,10 @@ These three functions have one job each and don't talk to Phidget hardware at al
 Finally! Let's connect to the Phidget server.
 
 ```javascript
+/// ---------------------
+/// Phidget Controls
+/// ---------------------
+
 async function connectToPhidgetServer(address, port) {
   connection = new phidget22.NetworkConnection({
     hostname: address,

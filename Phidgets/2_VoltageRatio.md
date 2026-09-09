@@ -55,6 +55,7 @@ In the body, you already have a section for the button:
 Add a new section right after it:
 
 ```html
+<!-- The voltage ratio visual -->
 <section>
   <h2>Voltage Ratio</h2>
   <div id="ratioVisual">
