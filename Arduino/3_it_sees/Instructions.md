@@ -22,7 +22,7 @@ Now let's power the button's built-in LED.
 
 1. Plug the **blue** (ground) male end that is coming from the button into any pin on the **left blue ground rail**
 
-2. Plug the **yellow** (LED positive) male end into any pin on the **red power rail** (this yellow is the LE positive that accepts 5v). (Notice that the green wire of the group is not plugged in anywhere, but we'll get a home for it here soon!)
+2. Plug the **yellow** (LED positive) male end into any pin on the **red power rail** (this yellow is the LED positive that accepts 5v). (Notice that the green wire of the group is not plugged in anywhere, but we'll get a home for it here soon!)
 
 The button should light up!
 
@@ -135,6 +135,8 @@ To add this second "eye", we will add an external LED so both the built-in and e
 - Jumper wire
 
 ### Wiring
+
+**Unplug the Nano before wiring this.**
 
 The 220 Ω resistor limits the current through the external LED, protecting both the LED and the Nano's pin D2 output.
 

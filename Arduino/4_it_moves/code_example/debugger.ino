@@ -32,7 +32,7 @@ void setup() {
 void loop() {
   int potValue = analogRead(potPin);
   float t = potValue / 1023.0;
-  int stepDelay = 40 * pow(0.15, t);
+  int stepDelay = 40 * pow(0.095, t);
 
   pos += direction;
   if (pos >= maxAngle || pos <= minAngle) {

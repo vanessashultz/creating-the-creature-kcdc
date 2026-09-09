@@ -59,10 +59,10 @@ This is the step people skip. Nothing works without it.
 
 1. Open the Arduino IDE
 2. Click the **circuit board icon** (second icon down in the left sidebar), or go to **Tools > Board > Boards Manager**
-    ![alt text](images/board_manager.png)
+    ![Board Manager in sidebar](images/board_manager.png)
 
 3. Search for `megaAVR`. Find **Arduino megaAVR Boards** and click **Install**
-    ![alt text](images/megaAVR_install.png)
+    ![megaAVR Boards install](images/megaAVR_install.png)
 
 4. Wait for it to finish. It's a few hundred MB and can take several minutes.
 
@@ -87,7 +87,7 @@ Connect the microUSB cable to your laptop. You may need to "allow" this accessor
 **Must be a data transfer cable.** Many cables are charge-only and carry no data. They look identical to good ones. If you're having issues with your laptop recognizing the board, this is the most likely reason.
 
 You should see a green power LED come on. Other orange LED lights (solid or blinking) are also normal.
-![alt text](images/blinking_green_light.png)
+![Green power LED on Nano](images/blinking_green_light.png)
 
 You may also see a popup that requests that you "allow this accessory". Select "allow".
 ![Allow accessory prompt](images/allow_accessory.png)
@@ -111,7 +111,7 @@ You should see **Arduino Nano Every** listed with a port beside it:
 Click it.
 
 *If the IDE offers to install the megaAVR core (should have installed before), click **Yes**.*
-![alt text](images/megaAVR_prompt.png)
+![megaAVR install prompt](images/megaAVR_prompt.png)
 
 That's it. The IDE is ready!
 

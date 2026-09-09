@@ -64,9 +64,7 @@ The Nano and the DFPlayer are going to have a conversation, so they each need a 
 
 ### Why the resistor?
 
-The Nano speaks at 5 volts. The DFPlayer's listening pin is only built to handle 3.3 volts. Shouting 5V at a 3.3V input works, mostly, but it stresses the pin and you get hiss through the speaker and occasional garbled commands.
-
-The resistor sits in the middle of that one wire and limits how much current can push into the pin. Think of it as turning the Nano's volume down to something the DFPlayer is comfortable hearing. It only goes on the wire where the Nano is talking, and resistors have no polarity, so it doesn't matter which way round you put it.
+The DFPlayer's RX pin can protect itself from the Nano's 5V, but only if something limits the current. That's the resistor's job. It goes on the wire where the Nano talks, and direction doesn't matter.
 
 ### Code changes
 

@@ -6,10 +6,10 @@ The Blink sketch is the "hello world" of Arduino. A steady blink is proof of lif
 *Arduino IDE has quite a few "built in" sketches that you can quickly run without changing the code.*
 
 1. To open the blink test, go to **File > Examples > 01.Basics > Blink**
-![alt text](images/Blink_rate_file.png)
+![Blink example in File menu](images/Blink_rate_file.png)
 
 2. Right now, the code only lives in your laptop and we need it to be "uploaded" to the Arduino Nano so that the Nano can run the code. Click the **arrow button** (Upload) to send the sketch to the board. This will compile and upload the code to the board, where it starts running on the Nano immediately.
-![alt text](images/upload.png)
+![Upload button](images/upload.png)
 
 3. Watch the console at the bottom of the window to make sure the upload was successful.
 
