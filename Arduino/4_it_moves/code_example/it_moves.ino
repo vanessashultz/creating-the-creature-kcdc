@@ -16,9 +16,9 @@ void loop() {
   float t = potValue / 1023.0;
 
   // Exponential curve: at t=0, delay = 40ms (slow sweep)
-  // at t=1, delay = 40 * 0.05 = 2ms (fast sweep)
+  // at t=1, delay = 40 * 0.095 = ~4ms (fast sweep)
   // This feels more even across the knob's full turn than a linear map
-  int stepDelay = 40 * pow(0.05, t);
+  int stepDelay = 40 * pow(0.095, t);
 
   // Move one degree in the current direction
   pos += direction;

@@ -54,7 +54,7 @@ Runs **repeatedly "forever"** after `setup()` finishes. Here we see:
 | `HIGH` / `LOW` | The two voltage states: on and off |
 | `delay(ms)` | Pauses for the given number of milliseconds before moving on |
 
-## Uplevel - Challenge Yourself with these Exercises
+## Bonus Rounds
 Want to challenge yourself to see if you understand the code in here? Try these challenges!
 
 1. The light is turning on and off every second. How can we make the light blink faster? Slower?

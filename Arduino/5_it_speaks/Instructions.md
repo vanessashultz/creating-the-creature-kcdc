@@ -117,6 +117,27 @@ If the light never comes on, check that your D0 and D1 wires aren't swapped. Tal
 
 ![Blinking DFPlayer](images/movies/blinking_dfplayer.gif)
 
+### Complete code
+
+```cpp
+#include <DFRobotDFPlayerMini.h>
+
+DFRobotDFPlayerMini player;
+
+void setup() {
+  Serial1.begin(9600);   // the D0/D1 pins, where the DFPlayer is wired
+  delay(2000);           // give the module time to wake up and read the card
+
+  player.begin(Serial1);
+  player.volume(25);     // 0 to 30
+}
+
+void loop() {
+  player.playMp3Folder(1);   // plays 0001.mp3 from the mp3 folder
+  delay(5000);               // wait 5 seconds, then do it again
+}
+```
+
 ## Step 4: Add the speaker
 
 Now let's give your creature a voicebox (because surely we won't regret it...). You're going to hear your creature's first words into this world!
@@ -336,9 +357,10 @@ The bottom of `debugger.ino` lists what common symptoms usually mean.
 That's your creature. It has a pulse, it sees, it moves, and now it speaks.
 
 1. **Unplug the Nano from your computer**
-2. Remove the DFPlayer, speaker, sensor, resistor, and all jumper wires
-3. Put everything back into the baggie labeled **"5_it_speaks"**
-4. Return **all baggies, wires, Nanos, micro USB cables, and adapters** to the front
+2. Push the microSD card in to pop it out of the DFPlayer, then remove the DFPlayer from the breadboard, then push the microSD card back into the DFPlayer
+3. Remove the speaker, sensor, resistor, and all jumper wires
+4. Put everything back into the baggie labeled **"5_it_speaks"**
+5. Return **all baggies, wires, Nanos, micro USB cables, and adapters** to the front
 
 If you want your creature to say something new once you have your own DFPlayer, [Loading Your Own Audio](Loading_Your_Own_Audio.md) walks through the whole card process.
 

@@ -14,8 +14,10 @@ int lastRaw = -1;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(BUTTON, INPUT_PULLUP);
+  // INPUT, not INPUT_PULLUP: the external 10k pull-down does this job.
+  pinMode(BUTTON, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(EXTERNAL_LED, OUTPUT);
 
   Serial.println("--- It Sees: debugger ---");
   Serial.println("Press and release the button. The raw value should change.");
@@ -27,6 +29,7 @@ void loop() {
   bool pressed = (raw == HIGH);         // what the real sketch treats as pressed
 
   digitalWrite(LED_BUILTIN, pressed ? HIGH : LOW);
+  digitalWrite(EXTERNAL_LED, pressed ? HIGH : LOW);
 
   // Only print when something changes, so the monitor stays readable
   if (raw != lastRaw) {

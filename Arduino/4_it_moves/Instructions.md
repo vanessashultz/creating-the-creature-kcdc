@@ -39,7 +39,7 @@ The servo has three wires. Take the group of three male-to-male jumper wires and
 Now plug the male ends into the breadboard on the **right side** near pin D9:
 
 1. **Orange** (signal) → **right row 4** (4i or 4j), the row aligned with **pin D9**
-2. **Red** (VCC) → **left row 12** (12a or 12b), straight into the Nano's **5V** pin
+2. **Red** (VCC) → **left row 12** (12a or 12b), straight into the Nano's **5V** pin (you could do it on the red rail, but I've found it doesn't give you enough power)
 3. **Brown** (GND) → any pin on the **left blue (–) ground rail**
 
 Notice that the servo's power does **not** go to the red rail, even though everything else does. Servos are greedy. A motor pulls a big gulp of current every time it starts moving, and the trip out to the rail and back costs a little voltage along the way. Normally that loss is too small to care about. With a servo yanking on the other end, it's enough to make the servo stutter, click, or stop entirely. Plugging it straight into row 12 puts it right next to the source.

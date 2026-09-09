@@ -75,6 +75,7 @@ The final section uses an MP3 player module that needs an extra library. Install
 1. Go to **Tools > Manage Libraries**, or click the **books icon** in the left sidebar
 2. Search for `DFRobotDFPlayerMini`
 3. Install the one by **DFRobot**
+![DFPlayer library install](images/dfplayer_library_install.png)
 
 > There are several similarly named libraries by other authors, such as "DFPlayer Mini Mp3 by Makuna" and "DFPlayerMini_Fast." They have different commands and will not work with our code. Make sure the author says **DFRobot**.
 
@@ -89,7 +90,7 @@ You should see a green power LED come on. Other orange LED lights (solid or blin
 ![alt text](images/blinking_green_light.png)
 
 You may also see a popup that requests that you "allow this accessory". Select "allow".
-![alt text](<Screenshot 2026-09-04 at 1.22.03 PM.png>)
+![Allow accessory prompt](images/allow_accessory.png)
 
 ---
 
@@ -98,6 +99,8 @@ You may also see a popup that requests that you "allow this accessory". Select "
 Open the dropdown at the top of the IDE window (it says "Select Board").
 
 You should see **Arduino Nano Every** listed with a port beside it:
+
+![Select board](images/select_board.png)
 
 | Platform | Port looks like |
 |---|---|
